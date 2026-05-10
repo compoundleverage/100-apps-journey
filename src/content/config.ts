@@ -117,6 +117,18 @@ const ideas = defineCollection({
           persona: z.string().min(1),
           score: z.number().int().min(1).max(10),
           reasoning: z.string().min(1),
+          // Per-dimension verdicts produced by the dimension-first scoring workflow
+          // (see VOICE_OVERRIDE in scripts/evaluate.ts). Optional because v1
+          // evaluations don't have them.
+          dimensions: z
+            .array(
+              z.object({
+                name: z.string(),
+                verdict: z.enum(["pass", "fail", "unclear"]),
+                note: z.string(),
+              }),
+            )
+            .optional(),
           generated_at: z.coerce.date().optional(),
           model: z.string().optional(),
           // Stamp the mentor version evaluations were generated against.

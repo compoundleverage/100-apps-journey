@@ -2,6 +2,7 @@
 import StatusBadge from "./StatusBadge.astro";
 import { averageScore } from "../lib/scoring";
 import { effectiveDisclosure, showThesis, showPanel } from "../lib/disclosure";
+import { getLang, localizedHref, STRINGS } from "../lib/i18n";
 import type { CollectionEntry } from "astro:content";
 
 interface Props {
@@ -17,9 +18,13 @@ const dateStr = data.date_added.toISOString().slice(0, 10);
 const isKilled = data.status === "killed";
 const showsThesis = showThesis(disclosure);
 const showsPanel = showPanel(disclosure);
+
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
+const ideaHref = localizedHref(`/ideas/${idea.id}`, lang);
 ---
 
-<a href={`/ideas/${idea.id}`} class="block group">
+<a href={ideaHref} class="block group">
   <article
     class="border-b border-rule grid grid-cols-[auto_1fr_auto] gap-4 sm:gap-8 items-baseline px-6 sm:px-10 py-5 sm:py-7 transition-colors duration-200 group-hover:bg-paper-soft"
   >
@@ -41,9 +46,9 @@ const showsPanel = showPanel(disclosure);
           !showsThesis && (
             <span
               class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft italic"
-              title="隐身中——上线或撤掉后才公开"
+              title={s.card_stealth_title}
             >
-              隐身
+              {s.card_stealth_label}
             </span>
           )
         }
@@ -55,19 +60,19 @@ const showsPanel = showPanel(disclosure);
           </p>
         ) : (
           <p class="font-body text-[15px] sm:text-base text-ink-soft leading-snug max-w-3xl">
-            <span class="opacity-60">—— thesis 在动工或上线前不公开。</span>
+            <span class="opacity-60">{s.card_thesis_hidden}</span>
           </p>
         )
       }
       <div
         class="flex items-center gap-3 sm:gap-4 mt-3 font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft flex-wrap"
       >
-        <span>记录 {dateStr}</span>
+        <span>{s.card_recorded_at(dateStr)}</span>
         {
           showsThesis && (
             <>
               <span class="opacity-50">·</span>
-              <span>预算 {data.time_budget}</span>
+              <span>{s.card_budget(data.time_budget)}</span>
             </>
           )
         }
@@ -92,19 +97,19 @@ const showsPanel = showPanel(disclosure);
               {avg}
             </span>
             <span class="font-mono text-[9px] uppercase tracking-[0.15em] text-ink-soft">
-              均分 / 10
+              {s.card_avg_label}
             </span>
           </>
         ) : showsPanel ? (
           <span class="font-mono text-[10px] text-ink-soft italic">
-            待评
+            {s.card_avg_pending}
           </span>
         ) : (
           <span
             class="font-mono text-[10px] text-ink-soft italic"
-            title="评审在上线或撤掉前不公开"
+            title={s.card_sealed_title}
           >
-            封存
+            {s.card_sealed}
           </span>
         )
       }

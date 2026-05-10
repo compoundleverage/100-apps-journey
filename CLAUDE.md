@@ -4,7 +4,10 @@ A public ledger of small app experiments — 100 attempts in 100 days, each eval
 
 ## Stack
 
-- **Astro 5** static site, **Tailwind v4** via Vite plugin
+- **Astro 5** with **`output: "server"`** + `@astrojs/vercel` adapter — pages are SSR
+  so `?lang=en` query strings can swap UI chrome at request time. OG endpoints
+  opt back into static via `export const prerender = true`.
+- **Tailwind v4** via Vite plugin
 - **Bun** runtime + package manager
 - **Node 22+** required for Astro tooling (`nvm use 22`)
 - **TypeScript strict**
@@ -32,6 +35,41 @@ bun run validate-sources           # source-reliability rubric check on mentor c
 OG images for `/`, every idea, and every mentor are generated at build time
 under `dist/og/...` via `src/lib/og/` (satori → SVG, resvg → PNG). The site
 default lives at `/og.png`; per-page OG paths are wired in each layout.
+
+## i18n
+
+UI chrome lives in `src/lib/i18n.ts` as a `STRINGS` lookup keyed by `zh | en`.
+`getLang(Astro.url)` reads `?lang=en` from the URL (default `zh`); pages are
+SSR so the same route renders both languages from one HTML file. Internal
+links go through `localizedHref(path, lang)` so the language preference
+follows navigation. An inline script in `Layout.astro` writes the chosen
+preference to `localStorage` and redirects URL-less visits when one is stored.
+
+Mentor reasoning is **always rendered in the mentor's native language**
+(English for the current bench) — this is enforced by `VOICE_OVERRIDE` in
+`scripts/evaluate.ts`. Translating mentor voice flattens the DNA, so the EN
+UI shows English reasoning and the CN UI also shows English reasoning, just
+inside a Chinese chrome.
+
+Idea body markdown stays in its source language (Chinese for #001) regardless
+of UI lang — long-form translation is out of scope.
+
+## Scoring workflow (evaluate.ts)
+
+Each mentor evaluation is a structured 3-step workflow enforced by
+`VOICE_OVERRIDE`:
+
+1. Per `agentic_protocol.research_dimensions`, commit a verdict
+   (`pass | fail | unclear`) + ≤12-word note.
+2. Aggregate to a 1–10 score using a calibrated scale anchor (1-2 reject;
+   3-4 skeptical; 5-6 plausible; 7-8 worth backing; 9-10 conviction). The
+   scale is shared across mentors so scores are comparable.
+3. 2-3-sentence reasoning in the mentor's native voice, second-person to the
+   proposer, referencing the verdict pattern implicitly.
+
+The output JSON is `{dimensions: [{name, verdict, note}, ...], score, reasoning}`.
+The `dimensions[]` array persists into the idea's `investor_evaluations[]`
+frontmatter for transparency.
 
 ## Content shape
 

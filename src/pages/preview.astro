@@ -2,8 +2,11 @@
 import Layout from "../layouts/Layout.astro";
 import LoadingPanel from "../components/LoadingPanel.astro";
 import { getCollection } from "astro:content";
+import { getLang, localizedHref, STRINGS } from "../lib/i18n";
 
 const isDev = import.meta.env.DEV;
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
 
 const allMentors = await getCollection("mentors");
 const slugs = allMentors
@@ -62,25 +65,24 @@ const signedExceptFailed = { ...mockSignedResults };
 delete (signedExceptFailed as Record<string, unknown>).pg;
 ---
 
-<Layout title="LoadingPanel preview · 100 Apps Journey">
+<Layout title={s.preview_page_title}>
   {
     !isDev ? (
       <article class="max-w-3xl mx-auto px-6 sm:px-10 py-32 text-center">
         <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-soft mb-6">
-          开发预览
+          Dev Preview
         </p>
         <p class="font-display text-2xl text-ink-soft italic mb-3">
-          这是 dev-only 页面。
+          {s.preview_dev_only_msg}
         </p>
         <p class="font-body text-sm text-ink-soft max-w-md mx-auto leading-relaxed">
-          LoadingPanel demo 用 <code class="font-mono text-xs">import.meta.env.DEV</code> gate——
-          本地运行 <code class="font-mono text-xs">bun run dev</code> 才能看到。
+          {s.preview_dev_only_explainer_p1} <code class="font-mono text-xs">import.meta.env.DEV</code> {s.preview_dev_only_explainer_p2}
         </p>
         <a
-          href="/"
+          href={localizedHref("/", lang)}
           class="inline-block mt-10 font-mono text-xs uppercase tracking-[0.2em] text-seal hover:text-ink transition-colors"
         >
-          ← 回到实验池
+          {s.preview_back_to_pipeline}
         </a>
       </article>
     ) : (

@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import { getLang, localizedHref, STRINGS } from "../lib/i18n";
 
 interface Evaluation {
   persona: string;
@@ -13,6 +14,8 @@ interface Props {
 }
 
 const { evaluations } = Astro.props;
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
 
 const mentorEntries = await getCollection("mentors");
 const mentors = mentorEntries
@@ -49,12 +52,12 @@ const lgColsClass =
     <p
       class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
     >
-      评审团 · {mentors.length} 位
+      {s.panel_header_count(mentors.length)}
     </p>
     <h2
       class="font-display text-2xl sm:text-3xl font-medium tracking-tight text-ink"
     >
-      投资人怎么说
+      {s.panel_header_subtitle}
     </h2>
   </header>
 
@@ -79,7 +82,7 @@ const lgColsClass =
             <div class="min-w-0 flex-1">
               <div class="flex items-baseline gap-2">
                 <a
-                  href={`/mentors/${mentor.slug}`}
+                  href={localizedHref(`/mentors/${mentor.slug}`, lang)}
                   class="font-display font-semibold text-ink leading-tight hover:text-seal transition-colors"
                 >
                   {mentor.name}
@@ -87,7 +90,7 @@ const lgColsClass =
                 <span
                   class="text-[11px] leading-none"
                   style={`color: ${mentor.accent}`}
-                  title={mentor.version === "v2-distilled" ? "完整蒸馏" : "v1 草稿"}
+                  title={mentor.version === "v2-distilled" ? s.panel_distilled : s.panel_bootstrap}
                 >
                   {versionGlyph(mentor.version)}
                 </span>
@@ -113,9 +116,9 @@ const lgColsClass =
                 {isStale && (
                   <span
                     class="ml-auto font-mono text-[9px] uppercase tracking-[0.15em] text-ink-soft italic"
-                    title={`本评分基于 ${evaluation.mentor_version}；当前 mentor 已升级到 ${mentor.version}，可重新评估。`}
+                    title={s.panel_stale_title(evaluation.mentor_version!, mentor.version)}
                   >
-                    过期
+                    {s.panel_stale}
                   </span>
                 )}
               </div>
@@ -129,7 +132,7 @@ const lgColsClass =
                 —
               </span>
               <p class="font-body italic text-[13px] text-ink-soft mt-3">
-                等待评审。
+                {s.panel_pending}
               </p>
             </div>
           )}
@@ -154,10 +157,10 @@ const lgColsClass =
             </span>
             <div class="min-w-0">
               <p class="font-display font-light text-ink-soft leading-tight">
-                席位待补
+                {s.panel_seat_open}
               </p>
               <p class="font-body text-[12.5px] text-ink-soft leading-snug mt-0.5">
-                蒸馏一位新顾问加入。
+                {s.panel_seat_open_subtitle}
               </p>
             </div>
           </div>
@@ -167,14 +170,14 @@ const lgColsClass =
             </span>
           </div>
           <p class="font-body text-[13px] leading-[1.6] text-ink-soft relative pl-3 border-l border-rule opacity-70">
-            还有一位评审可以加入。在项目里跑{" "}
+            {s.panel_invite_prefix}{" "}
             <a
-              href="/mentors"
+              href={localizedHref("/mentors", lang)}
               class="font-mono text-[11px] text-seal hover:text-ink transition-colors"
             >
               /persona-forge
-            </a>{" "}
-            。
+            </a>
+            {lang === "zh" ? "。" : "."}
           </p>
         </article>
       ))
@@ -184,8 +187,6 @@ const lgColsClass =
   <p
     class="font-body text-xs text-ink-soft max-w-3xl pt-2 leading-relaxed"
   >
-    每张评分卡都是用 Claude 以这个人物的口吻 prompt 后生成的，依据是他们公开的写作、谈话和思考方式。
-    重叠和分歧本身就是信号——但请记得，这些都不是本人的真实表态。
-    <span>◌</span> 是 v1 草稿，<span>●</span> 是完整蒸馏的 mentor。
+    {s.panel_disclaimer_p1} {s.panel_disclaimer_p2}
   </p>
 </section>

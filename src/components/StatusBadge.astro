@@ -1,4 +1,6 @@
 ---
+import { getLang, STRINGS } from "../lib/i18n";
+
 type Status = "idea" | "building" | "shipped" | "killed";
 
 interface Props {
@@ -7,18 +9,24 @@ interface Props {
 }
 
 const { status, size = "sm" } = Astro.props;
+const s = STRINGS[getLang(Astro.url)];
 
-const config: Record<
-  Status,
-  { label: string; mark: string; color: string }
-> = {
-  idea: { label: "想法", mark: "◌", color: "var(--color-idea)" },
-  building: { label: "在做", mark: "◐", color: "var(--color-building)" },
-  shipped: { label: "已上线", mark: "●", color: "var(--color-shipped)" },
-  killed: { label: "已撤", mark: "✕", color: "var(--color-killed)" },
+const labels: Record<Status, string> = {
+  idea: s.status_idea,
+  building: s.status_building,
+  shipped: s.status_shipped,
+  killed: s.status_killed,
 };
 
-const { label, mark, color } = config[status];
+const config: Record<Status, { mark: string; color: string }> = {
+  idea: { mark: "◌", color: "var(--color-idea)" },
+  building: { mark: "◐", color: "var(--color-building)" },
+  shipped: { mark: "●", color: "var(--color-shipped)" },
+  killed: { mark: "✕", color: "var(--color-killed)" },
+};
+
+const label = labels[status];
+const { mark, color } = config[status];
 const padX = size === "sm" ? "px-1.5" : "px-2";
 const padY = size === "sm" ? "py-[2px]" : "py-1";
 const text = size === "sm" ? "text-[9px]" : "text-[10px]";

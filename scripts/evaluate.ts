@@ -59,33 +59,72 @@ interface MentorMember {
   agentic_protocol?: AgenticProtocol;
 }
 
-// Final output rules (Chinese, first-person mentor → second-person user).
-// Appended last so it supersedes any English/third-person format spec embedded
-// in the mentor's frontmatter system_prompt.
+// Final output rules. Appended last so it supersedes any prior format spec in
+// the mentor's frontmatter system_prompt.
+//
+// Two big shifts vs the prior Chinese-first override:
+//   1. LANGUAGE: native voice (English for current bench). Translation flattened
+//      voice DNA — every mentor sounded vaguely the same in CN.
+//   2. SCORING: dimension-first workflow + calibrated scale anchors. Without
+//      anchors the model invented a fresh 1-10 mapping each call (high variance).
 const VOICE_OVERRIDE = `
+
 ---
 
-输出规则覆盖（最高优先级，覆盖上文任何关于格式 / 语言 / 人称的指令）：
+OUTPUT RULES (highest priority — overrides any prior format/language/person directives in this prompt):
 
-返回严格 JSON：{"score": 1-10, "reasoning": "<2-3 句中文>"}
+LANGUAGE: Reason and write in your own native voice. For all mentors on this
+bench that means English. Do NOT translate to any other language. Translation
+flattens voice DNA — preserved cadence, signature metaphors, and lexicon are
+the entire point of being you.
 
-reasoning 必须满足：
-- 用中文书写
-- 第一人称称呼自己：我看了 / 我会担心 / 如果让我做 / 我建议你
-- 第二人称称呼提案者：你这个 idea / 你想清楚了吗 / 你的 kill criteria / 你考虑过…吗
-- 禁止第三人称转述（不要写"X 可能会说"、"他会指出"、"这位 founder 可能会"）
-- 直接以这个人物的口吻对提案者讲话，像 mentor 给 mentee 当面反馈
-- 保留原本的 voice DNA：节奏、签名比喻、断句、专属用词、典型修辞——只是切到中文 + 直接对话
-- 该锋利就锋利，不软化、不客套、不公文体
-- score 必须严格按这个人的高标准给，不要为了 reasonable 而 inflation`;
+VOICE: First-person addressing the proposer in second-person. Talk to them
+the way you'd talk in person — not a memo, not a third-party summary. Keep
+your DNA: rhythm, signature metaphors, sentence shapes, taboo words, the
+moves that mark a paragraph as yours.
+
+SCORING DISCIPLINE (workflow constraint — follow exactly, do not freelance):
+
+Step 1 — For each of YOUR research dimensions (listed above if present;
+otherwise pick 3 of your own implicit criteria), commit to a verdict:
+  "pass" | "fail" | "unclear"
+plus 1 short note (≤ 12 words) citing what you saw or didn't see in the idea.
+
+Step 2 — Aggregate the verdicts to a 1-10 holistic score using THIS calibrated
+scale (do not invent your own — anchor every time you score):
+  1-2  Reject. Violates a load-bearing principle of yours.
+  3-4  Skeptical. Misses something fundamental but theoretically salvageable.
+  5-6  Plausible. Could go either way; the proposer hasn't decided yet.
+  7-8  Worth backing. The thesis holds; execution risk only.
+  9-10 Conviction. You'd write the check / build it yourself.
+
+Be honest about the verdict pattern: mostly pass → upper half; mostly fail →
+lower half; mixed/unclear → middle. Don't soften and don't perform sharpness.
+
+Step 3 — Reasoning: 2-3 sentences in your voice. Reference the verdicts
+implicitly through what you say, but do NOT enumerate "Dimension 1: pass"
+in prose. The reasoning should feel like the way you'd actually answer in
+person.
+
+OUTPUT (strict JSON, nothing else, no preamble, no closing remarks):
+{
+  "dimensions": [
+    {"name": "<dimension name>", "verdict": "pass|fail|unclear", "note": "<≤12 words>"},
+    ...
+  ],
+  "score": <1-10 integer>,
+  "reasoning": "<2-3 sentences in your native voice, addressing the proposer in second-person>"
+}`;
 
 /**
  * Build the final system prompt sent to the API.
- * For v2-distilled mentors with agentic_protocol, append the research dimensions
- * as an internal-only checklist. Output format remains JSON {score, reasoning}.
  *
- * VOICE_OVERRIDE is appended last so it supersedes any prior format spec in the
- * mentor's own system_prompt (some early ones encoded an English JSON spec).
+ * For v2-distilled mentors with agentic_protocol, surface the research
+ * dimensions as the explicit set the model commits verdicts on in Step 1
+ * of the SCORING DISCIPLINE block (defined in VOICE_OVERRIDE).
+ *
+ * VOICE_OVERRIDE is appended last so it supersedes any prior format spec
+ * in the mentor's own system_prompt (early forges encoded their own spec).
  */
 function composeSystemPrompt(m: MentorMember): string {
   let prompt = m.system_prompt;
@@ -97,11 +136,9 @@ function composeSystemPrompt(m: MentorMember): string {
 
 ---
 
-Internal checklist before scoring (do NOT output this; reason silently against each dimension, then produce the JSON):
+Your research dimensions (use these as the dimension list in Step 1 of the SCORING DISCIPLINE below; one verdict object per dimension in the output JSON):
 
-${dimensions}
-
-For each dimension, ask: does the idea pass, fail, or sit unclear? Use that internal pass/fail/unclear pattern to calibrate the score. Do not enumerate dimensions in your output — produce the JSON with score + reasoning only.`;
+${dimensions}`;
   }
   return prompt + VOICE_OVERRIDE;
 }
@@ -136,11 +173,19 @@ async function loadPanel(): Promise<MentorMember[]> {
   return panel.sort((a, b) => a.sort_order - b.sort_order);
 }
 
+interface DimensionVerdict {
+  name: string;
+  verdict: "pass" | "fail" | "unclear";
+  note: string;
+}
+
 interface Evaluation {
   persona: string;
   mentor_version: "v1-bootstrap" | "v2-distilled";
   score: number;
   reasoning: string;
+  /** Per-dimension verdicts produced by the dimension-first scoring workflow. */
+  dimensions?: DimensionVerdict[];
   generated_at: string;
   model: string;
   /** Internal — not persisted to frontmatter. */
@@ -193,29 +238,36 @@ async function loadIdeas(filter?: string): Promise<IdeaFile[]> {
 
 function buildUserMessage(idea: IdeaFile): string {
   const d = idea.data;
-  return `标题：${d.title}
-状态：${d.status}
-时间预算：${d.time_budget}
-标签：${Array.isArray(d.tags) ? (d.tags as string[]).join("、") : ""}
+  // Labels are English (matching the English-first system prompt). The values
+  // themselves stay in whatever language the markdown uses — mentors are
+  // bilingual readers, the goal is to keep ALL framing language consistent.
+  return `Title: ${d.title}
+Status: ${d.status}
+Time budget: ${d.time_budget}
+Tags: ${Array.isArray(d.tags) ? (d.tags as string[]).join(", ") : ""}
 
-Thesis：
+Thesis:
 ${d.thesis}
 
-Kill criteria：
+Kill criteria:
 ${d.kill_criteria}
 
-正文：
+Body:
 ${idea.body.trim()}`;
 }
 
-function extractJson(text: string): { score: number; reasoning: string } {
+function extractJson(text: string): {
+  score: number;
+  reasoning: string;
+  dimensions?: DimensionVerdict[];
+} {
   const start = text.indexOf("{");
   const end = text.lastIndexOf("}");
   if (start === -1 || end === -1) {
     throw new Error(`No JSON object found in: ${text.slice(0, 200)}`);
   }
   const jsonStr = text.slice(start, end + 1);
-  let parsed: { score?: unknown; reasoning?: unknown };
+  let parsed: { score?: unknown; reasoning?: unknown; dimensions?: unknown };
   try {
     parsed = JSON.parse(jsonStr);
   } catch (e) {
@@ -226,7 +278,28 @@ function extractJson(text: string): { score: number; reasoning: string } {
   if (!Number.isFinite(score) || !reasoning) {
     throw new Error(`Missing score/reasoning in: ${jsonStr.slice(0, 200)}`);
   }
-  return { score, reasoning };
+
+  let dimensions: DimensionVerdict[] | undefined;
+  if (Array.isArray(parsed.dimensions)) {
+    dimensions = parsed.dimensions
+      .map((d: unknown) => {
+        if (!d || typeof d !== "object") return null;
+        const o = d as Record<string, unknown>;
+        const name = String(o.name ?? "").trim();
+        const verdictRaw = String(o.verdict ?? "").trim().toLowerCase();
+        const verdict: DimensionVerdict["verdict"] =
+          verdictRaw === "pass" || verdictRaw === "fail" || verdictRaw === "unclear"
+            ? (verdictRaw as DimensionVerdict["verdict"])
+            : "unclear";
+        const note = String(o.note ?? "").trim();
+        if (!name) return null;
+        return { name, verdict, note };
+      })
+      .filter((d): d is DimensionVerdict => d !== null);
+    if (dimensions.length === 0) dimensions = undefined;
+  }
+
+  return { score, reasoning, dimensions };
 }
 
 async function evaluateOne(
@@ -267,7 +340,7 @@ async function evaluateOne(
     | undefined;
   if (!textBlock) throw new Error("Response had no text content");
 
-  const { score, reasoning } = extractJson(textBlock.text);
+  const { score, reasoning, dimensions } = extractJson(textBlock.text);
   const clamped = Math.max(1, Math.min(10, Math.round(score)));
 
   const u = response.usage as {
@@ -282,6 +355,7 @@ async function evaluateOne(
     mentor_version: persona.version,
     score: clamped,
     reasoning,
+    ...(dimensions ? { dimensions } : {}),
     generated_at: new Date().toISOString(),
     model,
     _usage: {

@@ -10,26 +10,24 @@ import {
   showPanel,
 } from "../../lib/disclosure";
 import { getCollection, render } from "astro:content";
-import type { CollectionEntry } from "astro:content";
+import { getLang, localizedHref, STRINGS } from "../../lib/i18n";
 
-export async function getStaticPaths() {
-  const ideas = await getCollection("ideas");
-  return ideas.map((idea) => ({
-    params: { slug: idea.id },
-    props: { idea },
-  }));
+// SSR mode: fetch the idea by slug at request time.
+// Returns 404 if no match — keeps behavior consistent with previous static build.
+const { slug } = Astro.params;
+const ideas = await getCollection("ideas");
+const idea = ideas.find((i) => i.id === slug);
+if (!idea) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
 }
-
-interface Props {
-  idea: CollectionEntry<"ideas">;
-}
-
-const { idea } = Astro.props;
 const data = idea.data;
 const disclosure = effectiveDisclosure(data);
 const showsThesis = showThesis(disclosure);
 const showsBody = showBody(disclosure);
 const showsPanel = showPanel(disclosure);
+
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
 
 const { Content } = await render(idea);
 const avg = averageScore(data.investor_evaluations);
@@ -38,9 +36,7 @@ const dateAdded = data.date_added.toISOString().slice(0, 10);
 const dateShipped = data.date_shipped?.toISOString().slice(0, 10);
 const dateKilled = data.date_killed?.toISOString().slice(0, 10);
 
-const description = showsThesis
-  ? data.thesis
-  : `Idea №${idStr} · 隐身中，动工或上线后公开。`;
+const description = showsThesis ? data.thesis : s.idea_stealth_description(idStr);
 
 // Per-idea OG only when the thesis is disclosed; otherwise fall back to site default
 // so we don't leak gated content via the social card.
@@ -62,7 +58,7 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
           <p
             class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
           >
-            日志条目 · №{idStr}
+            {s.idea_entry_label(idStr)}
           </p>
         </div>
 
@@ -79,12 +75,12 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
         >
           <StatusBadge status={data.status} />
           <span class="opacity-50">·</span>
-          <span>记录 {dateAdded}</span>
+          <span>{s.idea_recorded} {dateAdded}</span>
           {
             showsThesis && (
               <>
                 <span class="opacity-50">·</span>
-                <span>预算 {data.time_budget}</span>
+                <span>{s.idea_budget} {data.time_budget}</span>
               </>
             )
           }
@@ -92,7 +88,7 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
             dateShipped && (
               <>
                 <span class="opacity-50">·</span>
-                <span>上线 {dateShipped}</span>
+                <span>{s.idea_shipped_at} {dateShipped}</span>
               </>
             )
           }
@@ -100,7 +96,7 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
             dateKilled && (
               <>
                 <span class="opacity-50">·</span>
-                <span>撤下 {dateKilled}</span>
+                <span>{s.idea_killed_at} {dateKilled}</span>
               </>
             )
           }
@@ -116,7 +112,7 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
             !showsThesis && (
               <>
                 <span class="opacity-50">·</span>
-                <span class="italic">隐身中</span>
+                <span class="italic">{s.idea_stealth_inline}</span>
               </>
             )
           }
@@ -149,22 +145,22 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
             {showsPanel && avg !== null ? (
               <aside class="sm:text-right shrink-0 sm:min-w-[140px] sm:border-l border-rule sm:pl-8 sm:py-2">
                 <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2">
-                  评审均分
+                  {s.idea_panel_avg}
                 </p>
                 <p class="font-display text-[5rem] sm:text-[6rem] font-medium leading-[0.85] text-seal tabular-nums">
                   {avg}
                 </p>
                 <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mt-2">
-                  / 10 · {data.investor_evaluations.length} 位
+                  {s.idea_panel_avg_count(data.investor_evaluations.length)}
                 </p>
               </aside>
             ) : showsPanel ? (
               <aside class="sm:text-right shrink-0 sm:min-w-[140px] sm:border-l border-rule sm:pl-8 sm:py-2">
                 <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2">
-                  评审
+                  {s.idea_panel_section}
                 </p>
                 <p class="font-body italic text-sm text-ink-soft">
-                  尚未集结。
+                  {s.idea_panel_pending}
                 </p>
               </aside>
             ) : null}
@@ -174,13 +170,13 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
         <section class="border-b border-rule">
           <div class="max-w-3xl mx-auto px-6 sm:px-10 py-16 text-center">
             <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-soft mb-4">
-              封存条目
+              {s.idea_sealed_title}
             </p>
             <p class="font-display text-2xl sm:text-3xl font-light text-ink-soft leading-snug max-w-xl mx-auto">
-              这条目的 thesis、kill criteria 和评审在动工或上线前不公开。
+              {s.idea_sealed_p1}
             </p>
             <p class="font-body italic text-sm text-ink-soft mt-6 max-w-md mx-auto">
-              渐进披露：保护进行中的 idea 不被预判，但仍登记在公开日志里。
+              {s.idea_sealed_p2}
             </p>
           </div>
         </section>
@@ -202,7 +198,7 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
         <section>
           <div class="max-w-3xl mx-auto px-6 sm:px-10 py-12 sm:py-16">
             <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-6">
-              正文
+              {s.idea_body_section}
             </p>
             <div class="prose-journal">
               <Content />
@@ -217,7 +213,7 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
                     target="_blank"
                     rel="noreferrer"
                   >
-                    ↗ 上线
+                    {s.idea_link_url}
                   </a>
                 )}
                 {data.repo && (
@@ -227,7 +223,7 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
                     target="_blank"
                     rel="noreferrer"
                   >
-                    ↗ 代码库
+                    {s.idea_link_repo}
                   </a>
                 )}
               </div>
@@ -242,15 +238,15 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
         class="max-w-3xl mx-auto px-6 sm:px-10 py-6 flex items-center justify-between"
       >
         <a
-          href="/"
+          href={localizedHref("/", lang)}
           class="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft hover:text-seal transition-colors"
         >
-          ← 回到实验池
+          {s.idea_back_to_pipeline}
         </a>
         <span
           class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hidden sm:inline"
         >
-          条目 №{idStr} · 完
+          {s.idea_footer(idStr)}
         </span>
       </div>
     </nav>

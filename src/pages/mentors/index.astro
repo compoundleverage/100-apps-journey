@@ -1,6 +1,7 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import { getLang, localizedHref, STRINGS } from "../../lib/i18n";
 
 const mentorEntries = await getCollection("mentors");
 const mentors = mentorEntries
@@ -12,9 +13,12 @@ const versionGlyph = (v: string) => (v === "v2-distilled" ? "●" : "◌");
 const total = mentors.length;
 const distilled = mentors.filter((m) => m.version === "v2-distilled").length;
 const bootstraps = total - distilled;
+
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
 ---
 
-<Layout title="顾问团 · 100 Apps Journey">
+<Layout title={s.bench_page_title}>
   <article>
     <header class="border-b border-rule">
       <div
@@ -25,21 +29,20 @@ const bootstraps = total - distilled;
           <p
             class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
           >
-            顾问团
+            {s.bench_section_label}
           </p>
         </div>
         <h1
           class="font-display text-[2.5rem] sm:text-[3.5rem] font-medium tracking-[-0.02em] leading-[0.95] max-w-3xl entry-rise"
           style="animation-delay: 0.05s"
         >
-          评审席上的几个声音。
+          {s.bench_headline_l2}
         </h1>
         <p
           class="font-body text-base sm:text-lg text-ink-soft max-w-2xl leading-snug mt-6 entry-rise"
           style="animation-delay: 0.1s"
         >
-          每个 idea 都由这几位真人 mentor 的 AI 模拟评分。他们各自用自己的口吻、
-          自己的 mental model 思考——分歧本身就是信号。
+          {s.bench_intro}
         </p>
       </div>
     </header>
@@ -48,10 +51,10 @@ const bootstraps = total - distilled;
       total === 0 ? (
         <section class="max-w-3xl mx-auto px-6 sm:px-10 py-24 text-center">
           <p class="font-display text-3xl text-ink-soft italic mb-6">
-            顾问团暂时空着。
+            {s.bench_empty_title}
           </p>
           <p class="font-body italic text-sm text-ink-soft">
-            下方蒸馏第一位 mentor。
+            {s.bench_empty_subtitle}
           </p>
         </section>
       ) : (
@@ -59,24 +62,18 @@ const bootstraps = total - distilled;
           <section class="border-b border-rule">
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-6">
               <div class="flex flex-wrap items-baseline gap-x-8 gap-y-3 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
-                <span>
-                  在席 <span class="text-ink tabular-nums">{total}</span> 位
-                </span>
+                <span>{s.bench_count_seated(total)}</span>
                 <span class="opacity-50">·</span>
-                <span>
-                  <span class="text-ink tabular-nums">{distilled}</span> ● 完整蒸馏
-                </span>
+                <span>{s.bench_count_distilled(distilled)}</span>
                 <span class="opacity-50">·</span>
-                <span>
-                  <span class="text-ink tabular-nums">{bootstraps}</span> ◌ 草稿态
-                </span>
+                <span>{s.bench_count_bootstrap(bootstraps)}</span>
               </div>
             </div>
           </section>
 
           <section>
             {mentors.map((mentor) => (
-              <a href={`/mentors/${mentor.slug}`} class="block group">
+              <a href={localizedHref(`/mentors/${mentor.slug}`, lang)} class="block group">
                 <article class="border-b border-rule grid grid-cols-[auto_auto_1fr_auto] gap-4 sm:gap-8 items-baseline px-6 sm:px-10 py-6 sm:py-7 transition-colors duration-200 group-hover:bg-paper-soft">
                   <span
                     class="flex items-center justify-center w-9 h-9 rounded-full font-mono text-[11px] font-medium shrink-0 self-center"
@@ -105,28 +102,28 @@ const bootstraps = total - distilled;
                         <span class="text-ink tabular-nums">
                           {mentor.mental_models.length}
                         </span>{" "}
-                        心智模型
+                        {s.bench_card_models}
                       </span>
                       <span class="opacity-50">·</span>
                       <span>
                         <span class="text-ink tabular-nums">
                           {mentor.decision_heuristics.length}
                         </span>{" "}
-                        启发式
+                        {s.bench_card_heuristics}
                       </span>
                       <span class="opacity-50">·</span>
                       <span>
                         <span class="text-ink tabular-nums">
                           {mentor.primary_sources.length}
                         </span>{" "}
-                        一手来源
+                        {s.bench_card_sources}
                       </span>
                     </div>
                   </div>
 
                   <div class="hidden sm:flex flex-col items-end gap-1 shrink-0 self-center text-right">
                     <span class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                      {mentor.version === "v2-distilled" ? "完整态" : "草稿态"}
+                      {mentor.version === "v2-distilled" ? s.bench_card_distilled : s.bench_card_bootstrap}
                     </span>
                     <span class="font-mono text-[10px] tabular-nums text-ink-soft">
                       {mentor.research_date.toISOString().slice(0, 10)}
@@ -146,22 +143,21 @@ const bootstraps = total - distilled;
         <div class="flex items-center gap-3 mb-5">
           <span class="block w-6 h-px bg-seal"></span>
           <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal">
-            蒸馏新 mentor
+            {s.bench_distill_section}
           </p>
         </div>
         <h2 class="font-display text-2xl sm:text-3xl font-medium tracking-tight mb-4 leading-[1.15]">
-          顾问团默认封闭。
+          {s.bench_distill_intro}
         </h2>
         <p class="font-body text-sm sm:text-base text-ink-soft max-w-2xl leading-snug mb-10">
-          这里没有"添加"按钮。每位 mentor 都通过 Claude Code 里的 6-agent 调研 pipeline 蒸馏出来。
-          输入一个名字，下面会给你对应的命令——粘贴执行即可。
+          {s.bench_distill_explainer}
         </p>
 
         <!-- Form -->
         <div class="space-y-6 max-w-2xl">
           <label class="block">
             <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2 block">
-              名字
+              {s.bench_distill_name_label}
             </span>
             <input
               id="mentor-name"
@@ -174,7 +170,7 @@ const bootstraps = total - distilled;
 
           <div>
             <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2 block">
-              粘贴到 Claude Code
+              {s.bench_distill_paste_label}
             </span>
             <div class="flex items-stretch gap-px bg-rule border border-rule">
               <code
@@ -186,14 +182,14 @@ const bootstraps = total - distilled;
                 type="button"
                 class="bg-paper px-4 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hover:text-seal transition-colors shrink-0"
               >
-                复制
+                {s.bench_distill_copy}
               </button>
             </div>
             <p
               id="copy-feedback"
               class="font-mono text-[10px] uppercase tracking-[0.2em] text-seal mt-2 h-3 opacity-0 transition-opacity"
             >
-              已复制到剪贴板
+              {s.bench_distill_copied}
             </p>
           </div>
         </div>
@@ -202,43 +198,42 @@ const bootstraps = total - distilled;
         <div class="mt-12 pt-6 border-t border-rule grid sm:grid-cols-2 gap-x-10 gap-y-6 max-w-3xl">
           <div>
             <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3">
-              前置条件
+              {s.bench_distill_prereq_title}
             </p>
             <ul class="font-body text-sm text-ink space-y-1.5">
-              <li><span class="text-ink-soft mr-1">—</span>Node 22+ 和 Bun ≥ 1.1</li>
-              <li><span class="text-ink-soft mr-1">—</span>已安装 Claude Code 并打开本项目</li>
+              <li><span class="text-ink-soft mr-1">—</span>{s.bench_distill_prereq_node}</li>
+              <li><span class="text-ink-soft mr-1">—</span>{s.bench_distill_prereq_cc}</li>
               <li>
                 <span class="text-ink-soft mr-1">—</span>
-                <code class="font-mono text-xs">.env</code> 里有{" "}
-                <code class="font-mono text-xs">ANTHROPIC_API_KEY</code>
+                <code class="font-mono text-xs">ANTHROPIC_API_KEY</code> {s.bench_distill_prereq_env}{" "}
+                <code class="font-mono text-xs">.env</code>
               </li>
             </ul>
           </div>
           <div>
             <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3">
-              成本与耗时
+              {s.bench_distill_cost_title}
             </p>
             <ul class="font-body text-sm text-ink space-y-1.5">
-              <li><span class="text-ink-soft mr-1">—</span>每次蒸馏约 $1–2 API 费用</li>
-              <li><span class="text-ink-soft mr-1">—</span>执行约 5–15 分钟</li>
+              <li><span class="text-ink-soft mr-1">—</span>{s.bench_distill_cost_api}</li>
+              <li><span class="text-ink-soft mr-1">—</span>{s.bench_distill_cost_time}</li>
               <li>
-                <span class="text-ink-soft mr-1">—</span>外加约 30 分钟认真 review 各 checkpoint 的时间
+                <span class="text-ink-soft mr-1">—</span>{s.bench_distill_cost_review}
               </li>
             </ul>
           </div>
         </div>
 
         <p class="font-body text-xs text-ink-soft mt-10 leading-relaxed">
-          Pipeline 从公开来源（书、演讲、采访、社媒）蒸馏出 mental model、决策启发式和表达 DNA，
-          每条来源按 4 维可靠性 rubric 评分。结果落到{" "}
+          {s.bench_distill_pipeline_p1}{" "}
           <code class="font-mono text-xs">
             src/content/mentors/&lt;slug&gt;/
           </code>
-          ，新 mentor 自动加入评审团。中断后恢复用：{" "}
+          {lang === "zh" ? "，" : ", "}{s.bench_distill_pipeline_p2}{" "}
           <code class="font-mono text-xs text-seal">
             /persona-forge --resume &lt;slug&gt;
           </code>
-          。
+          {lang === "zh" ? "。" : "."}
         </p>
       </div>
     </section>

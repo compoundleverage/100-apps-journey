@@ -1,32 +1,29 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection, render } from "astro:content";
-import type { CollectionEntry } from "astro:content";
+import { getLang, localizedHref, STRINGS } from "../../lib/i18n";
 
-export async function getStaticPaths() {
-  const mentorEntries = await getCollection("mentors");
-  return mentorEntries.map((mentor) => ({
-    params: { slug: mentor.id },
-    props: { mentor },
-  }));
+// SSR mode: fetch the mentor by slug at request time.
+const { slug } = Astro.params;
+const mentorEntries = await getCollection("mentors");
+const mentor = mentorEntries.find((m) => m.id === slug);
+if (!mentor) {
+  return new Response(null, { status: 404, statusText: "Not Found" });
 }
-
-interface Props {
-  mentor: CollectionEntry<"mentors">;
-}
-
-const { mentor } = Astro.props;
 const data = mentor.data;
 const { Content } = await render(mentor);
 
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
+
 const versionGlyph = data.version === "v2-distilled" ? "●" : "◌";
 const versionLabel =
-  data.version === "v2-distilled" ? "完整态" : "草稿态 · v1";
+  data.version === "v2-distilled" ? s.mentor_version_complete : s.mentor_version_draft;
 const researchDate = data.research_date.toISOString().slice(0, 10);
 ---
 
 <Layout
-  title={`${data.name} · 顾问团 · 100 Apps Journey`}
+  title={`${data.name} ${s.mentor_page_title_suffix}`}
   description={data.epitaph}
   ogImage={`/og/mentors/${mentor.id}.png`}
 >
@@ -45,7 +42,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             class="font-mono text-[10px] uppercase tracking-[0.3em]"
             style={`color: ${data.accent}`}
           >
-            顾问 · {data.avatar_initials}
+            {s.mentor_advisor_label} · {data.avatar_initials}
           </p>
         </div>
 
@@ -87,13 +84,14 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
         {
           data.version === "v1-bootstrap" && (
             <p class="font-body text-sm text-ink-soft max-w-2xl mt-10 pl-6 border-l border-rule">
-              这位 mentor 目前是{" "}
-              <strong class="font-display font-semibold">草稿态</strong>——
-              从公开来源手工蒸馏的种子版。在 Claude Code 里跑{" "}
+              {s.mentor_v1_callout_p1}{" "}
+              <strong class="font-display font-semibold">{s.mentor_version_short_draft}</strong>
+              {lang === "zh" ? "——" : " — "}
+              {s.mentor_v1_callout_p2}{" "}
               <span class="font-mono text-xs text-seal">
                 /persona-forge "{data.name}"
-              </span>{" "}
-              即可用完整的 nuwa-skill 方法论深化。
+              </span>
+              {lang === "zh" ? "。" : "."}
             </p>
           )
         }
@@ -106,7 +104,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
         <section class="border-b border-rule">
           <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
             <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-6">
-              声纹 · 一眼能认出他的样子
+              {s.mentor_voiceprint_section}
             </p>
             <ul class="space-y-3 max-w-2xl">
               {data.tells.map((tell) => (
@@ -133,10 +131,10 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
       <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-14">
         <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-3 mb-8">
           <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-            心智模型
+            {s.mentor_models_section}
           </h2>
           <p class="font-body text-sm sm:text-base text-ink-soft max-w-xl">
-            他看世界的视角。点击展开 evidence 和 limits。
+            {s.mentor_models_intro}
           </p>
         </div>
 
@@ -156,10 +154,10 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                     {model.name}
                   </span>
                   <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft shrink-0 group-open:hidden">
-                    ▸ 展开
+                    {s.mentor_expand}
                   </span>
                   <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft shrink-0 hidden group-open:inline">
-                    ▾ 收起
+                    {s.mentor_collapse}
                   </span>
                 </summary>
                 <div class="pl-9 mt-3 space-y-3 max-w-2xl">
@@ -169,7 +167,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                   {model.evidence.length > 0 && (
                     <div>
                       <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
-                        依据
+                        {s.mentor_evidence}
                       </p>
                       <ul class="font-body italic text-sm text-ink-soft space-y-0.5">
                         {model.evidence.map((e) => (
@@ -181,7 +179,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                   {model.application && (
                     <div>
                       <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
-                        应用
+                        {s.mentor_application}
                       </p>
                       <p class="font-body italic text-sm text-ink-soft">
                         {model.application}
@@ -191,7 +189,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                   {model.limits && (
                     <div>
                       <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
-                        局限
+                        {s.mentor_limits}
                       </p>
                       <p class="font-body italic text-sm text-ink-soft">
                         {model.limits}
@@ -211,10 +209,10 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
       <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-14">
         <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-3 mb-8">
           <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-            决策启发式
+            {s.mentor_heuristics_section}
           </h2>
           <p class="font-body text-sm sm:text-base text-ink-soft max-w-xl">
-            他做快判断时用的规则。
+            {s.mentor_heuristics_intro}
           </p>
         </div>
         <ol class="space-y-6 max-w-3xl">
@@ -230,14 +228,14 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                   </p>
                   <p class="font-body italic text-sm text-ink-soft mt-2">
                     <span class="font-mono not-italic text-[9px] uppercase tracking-[0.2em] mr-1">
-                      适用：
+                      {s.mentor_when}
                     </span>
                     {h.when}
                   </p>
                   {h.example && (
                     <p class="font-body italic text-sm text-ink-soft mt-1">
                       <span class="font-mono not-italic text-[9px] uppercase tracking-[0.2em] mr-1">
-                        例：
+                        {s.mentor_example}
                       </span>
                       {h.example}
                     </p>
@@ -255,12 +253,12 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
       <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-14 grid lg:grid-cols-2 gap-x-12 gap-y-10">
         <div>
           <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-6">
-            表达 DNA
+            {s.mentor_dna_section}
           </h2>
           <dl class="space-y-3 max-w-md">
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                句式
+                {s.mentor_dna_sentence}
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.sentence_style}
@@ -268,7 +266,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                词汇
+                {s.mentor_dna_vocab}
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.vocabulary}
@@ -276,7 +274,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                节奏
+                {s.mentor_dna_rhythm}
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.rhythm}
@@ -284,7 +282,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                幽默
+                {s.mentor_dna_humor}
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.humor}
@@ -292,7 +290,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                确定性
+                {s.mentor_dna_certainty}
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.certainty}
@@ -300,7 +298,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                引用习惯
+                {s.mentor_dna_citations}
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.citation_habits}
@@ -314,7 +312,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             data.values.length > 0 && (
               <div>
                 <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
-                  价值观
+                  {s.mentor_values_section}
                 </h3>
                 <ul class="space-y-1.5 max-w-md">
                   {data.values.map((v) => (
@@ -332,7 +330,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             data.anti_patterns.length > 0 && (
               <div>
                 <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
-                  反模式
+                  {s.mentor_antipatterns_section}
                 </h3>
                 <ul class="space-y-1.5 max-w-md">
                   {data.anti_patterns.map((p) => (
@@ -350,7 +348,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             data.tensions.length > 0 && (
               <div>
                 <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
-                  内在张力
+                  {s.mentor_tensions_section}
                 </h3>
                 <ul class="space-y-2 max-w-md">
                   {data.tensions.map((t) => (
@@ -372,10 +370,10 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
         <section class="border-b border-rule">
           <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
             <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-3">
-              诚实边界
+              {s.mentor_boundaries_section}
             </h2>
             <p class="font-body text-sm text-ink-soft mb-6 max-w-xl">
-              这次蒸馏不能做什么。
+              {s.mentor_boundaries_intro}
             </p>
             <ul class="space-y-3 max-w-2xl">
               {data.boundaries.map((b) => (
@@ -410,7 +408,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
           data.intellectual_lineage && (
             <div class="lg:col-span-2">
               <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
-                智识谱系
+                {s.mentor_lineage_section}
               </h3>
               <p class="font-body italic text-sm text-ink leading-relaxed max-w-3xl">
                 {data.intellectual_lineage}
@@ -421,12 +419,12 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
 
         <div>
           <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-4">
-            一手来源
+            {s.mentor_primary_section}
           </h3>
           {
             data.primary_sources.length === 0 ? (
               <p class="font-body italic text-sm text-ink-soft">
-                暂未整理。
+                {s.mentor_primary_empty}
               </p>
             ) : (
               <ul class="space-y-2 max-w-md">
@@ -458,11 +456,11 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
 
         <div>
           <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-4">
-            二手参考
+            {s.mentor_secondary_section}
           </h3>
           {
             data.secondary_sources.length === 0 ? (
-              <p class="font-body italic text-sm text-ink-soft">暂未整理。</p>
+              <p class="font-body italic text-sm text-ink-soft">{s.mentor_secondary_empty}</p>
             ) : (
               <ul class="space-y-2 max-w-md">
                 {data.secondary_sources.map((s) => (
@@ -494,13 +492,13 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
         class="max-w-4xl mx-auto px-6 sm:px-10 py-6 flex items-center justify-between flex-wrap gap-3"
       >
         <a
-          href="/mentors"
+          href={localizedHref("/mentors", lang)}
           class="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft hover:text-seal transition-colors"
         >
-          ← 顾问团
+          {s.mentor_back_to_bench}
         </a>
         <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
-          {versionLabel} · 调研于 {researchDate}
+          {s.mentor_research_date(versionLabel, researchDate)}
         </span>
       </div>
     </section>

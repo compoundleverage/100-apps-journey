@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import { getLang, STRINGS } from "../lib/i18n";
 
 type LoadingState =
   | "queued"
@@ -23,16 +24,19 @@ interface Props {
   signed?: Record<string, SignedResult>;
   /** Optional caption above the panel. */
   caption?: string;
-  /** Title text. Defaults to "What the Investors Said" (matches InvestorPanel). */
+  /** Title text. Defaults to the loading default in STRINGS. */
   title?: string;
 }
+
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
 
 const {
   mentorSlugs,
   states = {},
   signed = {},
   caption,
-  title = "投资人怎么说",
+  title = s.loading_default_title,
 } = Astro.props;
 
 const allMentors = await getCollection("mentors");
@@ -43,12 +47,12 @@ const mentors = (
 ).sort((a, b) => a.data.sort_order - b.data.sort_order);
 
 const stateLabels: Record<LoadingState, string> = {
-  queued: "等待派单",
-  reading: "正在阅读",
-  consulting: "查阅档案",
-  composing: "起草批注",
-  signed: "已落款",
-  failed: "联络失败",
+  queued: s.loading_state_queued,
+  reading: s.loading_state_reading,
+  consulting: s.loading_state_consulting,
+  composing: s.loading_state_composing,
+  signed: s.loading_state_signed,
+  failed: s.loading_state_failed,
 };
 
 const stateProgress: Record<LoadingState, number> = {
@@ -103,8 +107,8 @@ const avg =
       {
         caption ??
           (signedCount === total
-            ? `评审团 · ${total} 位 · 全部落款`
-            : `评审团 · ${signedCount}/${total} 已落款${failedCount > 0 ? ` · ${failedCount} 位联络失败` : ""}`)
+            ? s.loading_summary_done(total)
+            : s.loading_summary_progress(signedCount, total, failedCount))
       }
     </p>
     <h2
@@ -197,12 +201,12 @@ const avg =
                   </span>
                 </div>
                 <p class="font-body text-[13px] leading-[1.6] text-ink-soft pl-3 border-l border-rule">
-                  联络 {m.name} 失败。
+                  {s.loading_failed_msg(m.name)}
                   <a
                     href="#"
                     class="ml-1 font-mono text-[10px] uppercase tracking-[0.15em] text-seal hover:text-ink transition-colors"
                   >
-                    重试 →
+                    {s.loading_retry}
                   </a>
                 </p>
               </>
@@ -229,15 +233,15 @@ const avg =
 
   <div class="flex items-baseline gap-3 flex-wrap pt-2">
     <p class="font-body text-xs text-ink-soft max-w-2xl leading-relaxed">
-      每张卡都是 AI 模拟，用 Claude 以这个人的口吻 prompt 生成，依据是他们公开的写作、谈话和思考方式。请勿当作本人的真实表态。
+      {s.loading_disclaimer}
     </p>
     {
       avg !== null && (
         <p
           class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft ml-auto whitespace-nowrap"
-          title={`基于 ${signedScores.length} 位已落款评审的均分`}
+          title={s.loading_avg_title(signedScores.length)}
         >
-          均分 <span class="font-display text-base text-ink tabular-nums">{avg}</span>
+          {s.loading_avg_label} <span class="font-display text-base text-ink tabular-nums">{avg}</span>
           {" "}/ 10
           {failedCount > 0 && (
             <span class="text-ink-soft normal-case italic"> ({signedScores.length} / {total})</span>
@@ -248,7 +252,7 @@ const avg =
     {
       avg === null && inProgress > 0 && (
         <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft ml-auto whitespace-nowrap">
-          {inProgress} 位评审中
+          {s.loading_in_progress(inProgress)}
         </p>
       )
     }

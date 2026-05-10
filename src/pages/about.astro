@@ -1,6 +1,7 @@
 ---
 import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import { getLang, localizedHref, STRINGS } from "../lib/i18n";
 
 const mentorEntries = await getCollection("mentors");
 const PANEL = mentorEntries
@@ -14,9 +15,12 @@ const PANEL = mentorEntries
     sort_order: m.data.sort_order,
   }))
   .sort((a, b) => a.sort_order - b.sort_order);
+
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
 ---
 
-<Layout title="方法论 · 100 Apps Journey">
+<Layout title={s.about_page_title}>
   <article>
     <header class="border-b border-rule">
       <div class="max-w-3xl mx-auto px-6 sm:px-10 pt-12 sm:pt-20 pb-10">
@@ -25,61 +29,39 @@ const PANEL = mentorEntries
           <p
             class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
           >
-            方法论
+            {s.about_section_label}
           </p>
         </div>
         <h1
           class="font-display text-[2.5rem] sm:text-[3.5rem] font-medium tracking-[-0.02em] leading-[0.95] entry-rise"
           style="animation-delay: 0.05s"
-        >
-          为什么 100 天<br />做 100 个 app。
-        </h1>
+          set:html={s.about_headline}
+        />
       </div>
     </header>
 
     <section>
       <div class="max-w-3xl mx-auto px-6 sm:px-10 py-12 sm:py-16">
         <div class="prose-journal">
-          <p>
-            AI 把做一个能跑的 prototype 的成本，从几周压缩到了几小时。
-            约束已经不再是工程能力——而是<em>知道做什么</em>。
-            找出答案最有效的方式，就是做、上线、观察、决策。
-          </p>
+          <h2>{s.about_section_premise}</h2>
+          <p set:html={s.about_premise_p1} />
+          <p>{s.about_premise_p2}</p>
 
-          <p>
-            这个站点就是这种实验的公开账本：100 天里做 100 次小尝试。
-            每次都按 angel investment 的方式处理——一个 thesis、一个 kill criteria、
-            一份时间预算。大多数会失败，少数会露出苗头。
-            组合思维的前提是：你不会预先知道哪一个是 outlier，只有靠尝试找出来。
-          </p>
-
-          <h2>框架</h2>
-          <p>每个条目都有四个必填字段，作为约束：</p>
+          <h2>{s.about_section_framework}</h2>
+          <p>{s.about_framework_intro}</p>
           <ul>
-            <li>
-              <strong>Thesis</strong>——为什么这件事可能有价值，一两句话说清楚。
-            </li>
-            <li>
-              <strong>Kill criteria</strong>——什么条件下这件事被无情撤掉。
-            </li>
-            <li>
-              <strong>时间预算</strong>——重新评估之前的投入上限。
-            </li>
-            <li>
-              <strong>标签</strong>——日后做规律识别时的领域标记。
-            </li>
+            <li set:html={s.about_framework_thesis} />
+            <li set:html={s.about_framework_kill} />
+            <li set:html={s.about_framework_budget} />
+            <li set:html={s.about_framework_tags} />
           </ul>
         </div>
 
         <hr class="my-12 border-rule" />
 
         <div class="prose-journal">
-          <h2>评审团</h2>
-          <p>
-            每个 idea 都由一组 AI 模拟的真人投资人和建造者评分。
-            每位都以自己的口吻推理——依据是他们公开的写作、谈话、社媒发言——
-            不做人为的分工。他们的视角会重叠、会分歧、各自带上完整的判断框架。
-          </p>
+          <h2>{s.about_section_panel}</h2>
+          <p>{s.about_panel_p1}</p>
         </div>
 
         <ul class="mt-6 grid gap-3">
@@ -109,30 +91,23 @@ const PANEL = mentorEntries
         </ul>
 
         <p class="mt-6 font-body text-xs text-ink-soft leading-relaxed">
-          评分都是 AI 模拟生成，依据是他们公开的写作和谈话；
-          不代表本人的真实立场或对项目的背书。
+          {s.about_panel_disclaimer_p1}
+          {s.about_panel_disclaimer_p2}
         </p>
 
         <hr class="my-12 border-rule" />
 
         <div class="prose-journal">
-          <h2>承诺</h2>
-          <p>
-            大多数尝试都会扔掉。这正是关键。
-            真正复利的资产不是任何一个 app——而是这套<em>纪律</em>：
-            每件事都写下 thesis / kill criteria / 时间预算；不和自己的 idea 谈恋爱；
-            让评审团充分分歧。100 天结束时，整个 portfolio 自己会说话。
-          </p>
-          <p>
-            到第 200 天，其中两三个会脱出账本本身，长成真正的产品。这就是这个赌注。
-          </p>
+          <h2>{s.about_section_pact}</h2>
+          <p set:html={s.about_pact_p1} />
+          <p>{s.about_pact_p2}</p>
         </div>
 
         <div
           class="mt-16 pt-6 border-t border-rule font-mono text-xs uppercase tracking-[0.2em] text-ink-soft"
         >
-          <a href="/" class="hover:text-seal transition-colors">
-            ← 回到实验池
+          <a href={localizedHref("/", lang)} class="hover:text-seal transition-colors">
+            {s.about_back_to_pipeline}
           </a>
         </div>
       </div>

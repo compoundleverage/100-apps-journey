@@ -1,5 +1,6 @@
 ---
 import "../styles/global.css";
+import { getLang, localizedHref, STRINGS } from "../lib/i18n";
 
 interface Props {
   title: string;
@@ -7,21 +8,34 @@ interface Props {
   ogImage?: string;
 }
 
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
+const altLang = lang === "zh" ? "en" : "zh";
+
 const {
   title,
-  description = "公开的 100 天小实验日志，每个 idea 都由 AI 模拟的真人投资人评分。",
+  description = s.site_description,
   ogImage = "/og.png",
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
-const canonicalUrl = new URL(pathname, Astro.site).href;
+const canonicalUrl = new URL(localizedHref(pathname, lang), Astro.site).href;
 const absoluteOgImage = new URL(ogImage, Astro.site).href;
+const altHref = localizedHref(pathname, altLang);
+const zhHref = new URL(localizedHref(pathname, "zh"), Astro.site).href;
+const enHref = new URL(localizedHref(pathname, "en"), Astro.site).href;
 const isActive = (path: string) =>
   path === "/" ? pathname === "/" : pathname.startsWith(path);
+
+// Lang-aware internal hrefs for nav + footer index.
+const homeHref = localizedHref("/", lang);
+const statsHref = localizedHref("/stats", lang);
+const mentorsHref = localizedHref("/mentors", lang);
+const aboutHref = localizedHref("/about", lang);
 ---
 
 <!doctype html>
-<html lang="zh-CN">
+<html lang={s.htmlLang}>
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -36,6 +50,9 @@ const isActive = (path: string) =>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#f7f3ea" />
     <link rel="canonical" href={canonicalUrl} />
+    <link rel="alternate" hreflang="zh-CN" href={zhHref} />
+    <link rel="alternate" hreflang="en" href={enHref} />
+    <link rel="alternate" hreflang="x-default" href={zhHref} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
@@ -43,21 +60,42 @@ const isActive = (path: string) =>
     <meta property="og:image" content={absoluteOgImage} />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content={lang === "zh" ? "zh_CN" : "en_US"} />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
     <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={absoluteOgImage} />
+    <script is:inline>
+      // Persist explicit ?lang choice; otherwise honor previously-stored preference.
+      (function () {
+        try {
+          var url = new URL(window.location.href);
+          var urlLang = url.searchParams.get("lang");
+          if (urlLang === "en" || urlLang === "zh") {
+            localStorage.setItem("preferredLang", urlLang);
+            return;
+          }
+          var stored = localStorage.getItem("preferredLang");
+          if (stored === "en") {
+            url.searchParams.set("lang", "en");
+            window.location.replace(url.toString());
+          }
+        } catch (e) {
+          /* ignore — localStorage may be unavailable in some embeds */
+        }
+      })();
+    </script>
   </head>
   <body class="bg-paper text-ink min-h-screen flex flex-col overflow-x-hidden">
     <header class="border-b border-rule">
       <div
         class="max-w-6xl mx-auto px-5 sm:px-10 py-5 sm:py-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8"
       >
-        <a href="/" class="block group">
+        <a href={homeHref} class="block group">
           <p
             class="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
           >
-            Vol. I · MMXXVI
+            {s.masthead_volume}
           </p>
           <h1
             class="font-display font-semibold text-2xl sm:text-4xl tracking-tight text-ink leading-none group-hover:text-seal transition-colors duration-200"
@@ -69,28 +107,35 @@ const isActive = (path: string) =>
           class="flex items-baseline gap-4 sm:gap-7 font-mono text-[10px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.15em] flex-wrap"
         >
           <a
-            href="/"
+            href={homeHref}
             class={`hover:text-seal transition-colors duration-200 ${isActive("/") ? "text-ink" : "text-ink-soft"}`}
           >
-            实验池
+            {s.nav_pipeline}
           </a>
           <a
-            href="/stats"
+            href={statsHref}
             class={`hover:text-seal transition-colors duration-200 ${isActive("/stats") ? "text-ink" : "text-ink-soft"}`}
           >
-            评分
+            {s.nav_standings}
           </a>
           <a
-            href="/mentors"
+            href={mentorsHref}
             class={`hover:text-seal transition-colors duration-200 ${isActive("/mentors") ? "text-ink" : "text-ink-soft"}`}
           >
-            顾问团
+            {s.nav_bench}
           </a>
           <a
-            href="/about"
+            href={aboutHref}
             class={`hover:text-seal transition-colors duration-200 ${isActive("/about") ? "text-ink" : "text-ink-soft"}`}
           >
-            方法
+            {s.nav_method}
+          </a>
+          <a
+            href={altHref}
+            aria-label={`Switch language to ${altLang === "zh" ? "中文" : "English"}`}
+            class="hover:text-seal transition-colors duration-200 text-ink-soft border border-rule rounded-sm px-1.5 py-0.5"
+          >
+            {s.lang_toggle_to}
           </a>
         </nav>
       </div>
@@ -109,35 +154,27 @@ const isActive = (path: string) =>
             100 Apps Journey
           </p>
           <p class="font-body text-sm text-ink-soft leading-snug">
-            公开的小实验日志，每个 idea 由 AI 模拟的几位真人投资人评分。
+            {s.site_description}
           </p>
         </div>
         <div>
           <p
             class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3"
           >
-            目录
+            {s.footer_section_index}
           </p>
           <ul class="font-body text-sm space-y-1.5">
             <li>
-              <a href="/" class="hover:text-seal transition-colors"
-                >实验池</a
-              >
+              <a href={homeHref} class="hover:text-seal transition-colors">{s.nav_pipeline}</a>
             </li>
             <li>
-              <a href="/stats" class="hover:text-seal transition-colors"
-                >评分</a
-              >
+              <a href={statsHref} class="hover:text-seal transition-colors">{s.nav_standings}</a>
             </li>
             <li>
-              <a href="/mentors" class="hover:text-seal transition-colors"
-                >顾问团</a
-              >
+              <a href={mentorsHref} class="hover:text-seal transition-colors">{s.nav_bench}</a>
             </li>
             <li>
-              <a href="/about" class="hover:text-seal transition-colors"
-                >方法论</a
-              >
+              <a href={aboutHref} class="hover:text-seal transition-colors">{s.nav_method}</a>
             </li>
           </ul>
         </div>
@@ -145,13 +182,12 @@ const isActive = (path: string) =>
           <p
             class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3"
           >
-            关于评审
+            {s.footer_section_about_panel}
           </p>
           <p
             class="font-body text-xs text-ink-soft leading-relaxed max-w-sm sm:ml-auto"
           >
-            本站投资人评分均由 AI 模拟生成，依据是他们公开的写作、谈话和思考方式，
-            不代表本人的真实立场或表态。
+            {s.footer_disclaimer}
           </p>
         </div>
       </div>
@@ -160,7 +196,7 @@ const isActive = (path: string) =>
           class="max-w-6xl mx-auto px-6 sm:px-10 py-4 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft"
         >
           <span>№ 100 / Day {`<= 100`}</span>
-          <span>排版 · Fraunces · Spectral · Noto Serif SC · JetBrains Mono</span>
+          <span>{s.footer_typography_label}</span>
         </div>
       </div>
     </footer>

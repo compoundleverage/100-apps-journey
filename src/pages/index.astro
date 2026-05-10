@@ -2,8 +2,11 @@
 import Layout from "../layouts/Layout.astro";
 import IdeaCard from "../components/IdeaCard.astro";
 import { getCollection } from "astro:content";
+import { getLang, STRINGS } from "../lib/i18n";
 
 const ideas = await getCollection("ideas");
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
 
 // Sort: building first, then idea, then shipped, then killed.
 // Within each, newest date_added first.
@@ -33,7 +36,7 @@ const target = 100;
 const today = new Date().toISOString().slice(0, 10);
 ---
 
-<Layout title="实验池 · 100 Apps Journey">
+<Layout title={`${s.nav_pipeline} · 100 Apps Journey`}>
   <section class="border-b border-rule">
     <div
       class="max-w-6xl mx-auto px-6 sm:px-10 pt-12 sm:pt-20 pb-12 sm:pb-16"
@@ -43,7 +46,7 @@ const today = new Date().toISOString().slice(0, 10);
         <p
           class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
         >
-          实验池 · 第 001 期
+          {s.home_section_label}
         </p>
       </div>
 
@@ -51,17 +54,16 @@ const today = new Date().toISOString().slice(0, 10);
         class="font-display text-[2.5rem] sm:text-[4rem] lg:text-[5rem] font-medium tracking-[-0.02em] leading-[0.92] mb-8 max-w-4xl entry-rise"
         style="animation-delay: 0.05s"
       >
-        100 次尝试。<br />
-        <span class="italic font-light text-ink-soft">100 天。</span><br />
-        一份 portfolio。
+        {s.home_headline_l1}<br />
+        <span class="italic font-light text-ink-soft">{s.home_headline_l2}</span><br />
+        {s.home_headline_l3}
       </h2>
 
       <p
         class="font-body text-lg sm:text-xl text-ink-soft max-w-2xl leading-snug entry-rise"
         style="animation-delay: 0.1s"
       >
-        公开的小实验日志——每个 idea 由 AI 模拟的几位真人投资人评分。
-        偏好鲜明，分歧更鲜明。
+        {s.home_intro}
       </p>
     </div>
   </section>
@@ -74,7 +76,7 @@ const today = new Date().toISOString().slice(0, 10);
         <p
           class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft"
         >
-          截至 {today}
+          {s.home_as_of(today)}
         </p>
         <div class="h-px flex-1 min-w-12 bg-rule"></div>
       </div>
@@ -86,7 +88,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            已记录
+            {s.home_stats_recorded}
           </dt>
           <dd class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none">
             {stats.total}<span class="text-ink-soft text-base">/{target}</span>
@@ -96,7 +98,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            想法
+            {s.home_stats_idea}
           </dt>
           <dd
             class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
@@ -109,7 +111,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            在做
+            {s.home_stats_building}
           </dt>
           <dd
             class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
@@ -122,7 +124,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            已上线
+            {s.home_stats_shipped}
           </dt>
           <dd
             class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
@@ -135,7 +137,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            已撤
+            {s.home_stats_killed}
           </dt>
           <dd
             class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
@@ -152,9 +154,9 @@ const today = new Date().toISOString().slice(0, 10);
     {
       sorted.length === 0 ? (
         <div class="max-w-3xl mx-auto px-6 sm:px-10 py-24 text-center">
-          <p class="font-display text-2xl text-ink mb-3">还没有 idea。</p>
+          <p class="font-display text-2xl text-ink mb-3">{s.home_empty_title}</p>
           <p class="font-body italic text-ink-soft">
-            旅程从第一篇日志开始。
+            {s.home_empty_subtitle}
           </p>
         </div>
       ) : (

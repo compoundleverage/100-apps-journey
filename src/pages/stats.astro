@@ -3,8 +3,11 @@ import Layout from "../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import { averageScore } from "../lib/scoring";
 import { effectiveDisclosure, showPanel } from "../lib/disclosure";
+import { getLang, localizedHref, STRINGS } from "../lib/i18n";
 
 const ideas = await getCollection("ideas");
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
 
 // Only count ideas where the panel is publicly disclosed.
 const visibleIdeas = ideas.filter((i) => showPanel(effectiveDisclosure(i.data)));
@@ -73,7 +76,7 @@ const maxBucket = Math.max(...scoreDistribution.map((d) => d.count), 1);
 const maxPersonaAvg = 10;
 ---
 
-<Layout title="评分 · 100 Apps Journey">
+<Layout title={s.stats_page_title}>
   <article>
     <header class="border-b border-rule">
       <div
@@ -84,15 +87,15 @@ const maxPersonaAvg = 10;
           <p
             class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
           >
-            评分
+            {s.stats_section_label}
           </p>
         </div>
         <h1
           class="font-display text-[2.25rem] sm:text-[3.5rem] font-medium tracking-[-0.02em] leading-[0.95] max-w-3xl entry-rise"
           style="animation-delay: 0.05s"
         >
-          评审团<br />
-          <span class="italic font-light text-ink-soft">的整体倾向。</span>
+          {s.stats_headline_l1}<br />
+          <span class="italic font-light text-ink-soft">{s.stats_headline_l2}</span>
         </h1>
       </div>
     </header>
@@ -101,10 +104,10 @@ const maxPersonaAvg = 10;
       total === 0 ? (
         <section class="max-w-3xl mx-auto px-6 sm:px-10 py-24 text-center">
           <p class="font-display text-2xl text-ink mb-3">
-            暂无登记。
+            {s.stats_empty_l1}
           </p>
           <p class="font-body italic text-ink-soft">
-            随着条目积累，趋势会逐渐显形。
+            {s.stats_empty_l2}
           </p>
         </section>
       ) : (
@@ -114,11 +117,10 @@ const maxPersonaAvg = 10;
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
               <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-4 mb-8">
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-                  实验池构成
+                  {s.stats_block_pipeline_title}
                 </h2>
                 <p class="font-body text-ink-soft text-sm sm:text-base max-w-xl">
-                  目前 {total} 个登记 idea 的分布。曲线形状告诉你管线健不健康——
-                  <em>想法</em> 太多是麻痹；<em>已撤</em> 太少是恋旧。
+                  {s.stats_block_pipeline_desc(total)}
                 </p>
               </div>
 
@@ -137,12 +139,12 @@ const maxPersonaAvg = 10;
                             : "var(--color-killed)";
                     const label =
                       key === "idea"
-                        ? "想法"
+                        ? s.status_idea
                         : key === "building"
-                          ? "在做"
+                          ? s.status_building
                           : key === "shipped"
-                            ? "已上线"
-                            : "已撤";
+                            ? s.status_shipped
+                            : s.status_killed;
                     return (
                       <div>
                         <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
@@ -170,11 +172,10 @@ const maxPersonaAvg = 10;
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
               <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-4 mb-8">
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-                  评审均分
+                  {s.stats_block_panel_avg_title}
                 </h2>
                 <p class="font-body text-ink-soft text-sm sm:text-base max-w-xl">
-                  每位评审在全部 idea 上的均分。离群点比绝对值更重要——
-                  谁始终更狠、谁是啦啦队、分歧在哪。
+                  {s.stats_block_panel_avg_desc}
                 </p>
               </div>
 
@@ -213,7 +214,7 @@ const maxPersonaAvg = 10;
                           {avg !== null ? avg.toFixed(1) : "—"}
                         </p>
                         <p class="font-mono text-[9px] uppercase tracking-[0.15em] text-ink-soft mt-1">
-                          {count} 次评分
+                          {s.stats_block_panel_avg_count(count)}
                         </p>
                       </div>
                     </li>
@@ -228,11 +229,10 @@ const maxPersonaAvg = 10;
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
               <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-4 mb-8">
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-                  分数分布
+                  {s.stats_block_distribution_title}
                 </h2>
                 <p class="font-body text-ink-soft text-sm sm:text-base max-w-xl">
-                  {allEvals.length} 次单独评分的聚类形态。双峰说明立场鲜明，
-                  扎堆中位说明评审在客气。
+                  {s.stats_block_distribution_desc(allEvals.length)}
                 </p>
               </div>
 
@@ -267,14 +267,14 @@ const maxPersonaAvg = 10;
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-10 sm:py-14 grid lg:grid-cols-2 gap-10 lg:gap-16">
               <div>
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-2">
-                  评分榜首
+                  {s.stats_block_top_title}
                 </h2>
                 <p class="font-body italic text-ink-soft text-sm mb-6">
-                  评审均分最高的几个。
+                  {s.stats_block_top_desc}
                 </p>
                 {ranked.length === 0 ? (
                   <p class="font-body italic text-ink-soft text-sm">
-                    还没有评过的条目。
+                    {s.stats_block_top_empty}
                   </p>
                 ) : (
                   <ol class="space-y-4">
@@ -284,7 +284,7 @@ const maxPersonaAvg = 10;
                           {String(i + 1).padStart(2, "0")}
                         </span>
                         <a
-                          href={`/ideas/${idea.id}`}
+                          href={localizedHref(`/ideas/${idea.id}`, lang)}
                           class="font-display font-medium text-ink hover:text-seal transition-colors leading-tight"
                         >
                           {idea.data.title}
@@ -300,14 +300,14 @@ const maxPersonaAvg = 10;
 
               <div>
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-2">
-                  分歧最大
+                  {s.stats_block_divisive_title}
                 </h2>
                 <p class="font-body italic text-ink-soft text-sm mb-6">
-                  最高分与最低分的差距最大。
+                  {s.stats_block_divisive_desc}
                 </p>
                 {disagreed.length === 0 ? (
                   <p class="font-body italic text-ink-soft text-sm">
-                    至少需要两次评分才能看出分歧。
+                    {s.stats_block_divisive_empty}
                   </p>
                 ) : (
                   <ol class="space-y-4">
@@ -317,7 +317,7 @@ const maxPersonaAvg = 10;
                           {String(i + 1).padStart(2, "0")}
                         </span>
                         <a
-                          href={`/ideas/${idea.id}`}
+                          href={localizedHref(`/ideas/${idea.id}`, lang)}
                           class="font-display font-medium text-ink hover:text-seal transition-colors leading-tight"
                         >
                           {idea.data.title}
