@@ -29,6 +29,19 @@ const ordered = mentors.map((mentor) => {
 });
 
 const versionGlyph = (v: string) => (v === "v2-distilled" ? "●" : "◌");
+
+// Pick the column count for the grid based on mentor count.
+// Then compute how many empty placeholder seats to render so the grid never
+// shows a raw bg-rule cell at the end.
+const total = ordered.length;
+const lgCols = total <= 5 ? 5 : total === 6 ? 3 : total <= 8 ? 4 : total === 9 ? 3 : 4;
+const emptySeats = (lgCols - (total % lgCols)) % lgCols;
+const lgColsClass =
+  lgCols === 5
+    ? "lg:grid-cols-5"
+    : lgCols === 4
+      ? "lg:grid-cols-4"
+      : "lg:grid-cols-3";
 ---
 
 <section class="space-y-6">
@@ -55,13 +68,7 @@ const versionGlyph = (v: string) => (v === "v2-distilled" ? "●" : "◌");
   </header>
 
   <div
-    class={`grid grid-cols-1 sm:grid-cols-2 gap-px bg-rule ${
-      mentors.length <= 5
-        ? "lg:grid-cols-5"
-        : mentors.length <= 6
-          ? "lg:grid-cols-3"
-          : "lg:grid-cols-4"
-    }`}
+    class={`grid grid-cols-1 sm:grid-cols-2 gap-px bg-rule ${lgColsClass}`}
   >
     {
       ordered.map(({ mentor, evaluation, isStale }) => (
@@ -141,6 +148,56 @@ const versionGlyph = (v: string) => (v === "v2-distilled" ? "●" : "◌");
               </p>
             </div>
           )}
+        </article>
+      ))
+    }
+    {
+      Array.from({ length: emptySeats }).map((_, i) => (
+        <article
+          class="relative bg-paper px-5 pt-6 pb-6 flex flex-col"
+          aria-hidden="true"
+        >
+          <div
+            class="absolute top-0 left-0 right-0 h-[3px] opacity-20"
+            style="background: var(--color-rule)"
+          />
+          <p class="font-mono text-[8.5px] uppercase tracking-[0.2em] text-ink-soft mb-5 flex items-center gap-1.5 opacity-60">
+            <span
+              class="inline-block w-1 h-1 rounded-full"
+              style="background: var(--color-rule)"
+            />
+            Empty seat
+          </p>
+          <div class="flex items-start gap-3 mb-3 opacity-40">
+            <span
+              class="flex items-center justify-center w-9 h-9 rounded-full border border-dashed border-rule shrink-0 mt-0.5 text-ink-soft font-mono text-[14px]"
+            >
+              ◌
+            </span>
+            <div class="min-w-0">
+              <p class="font-display italic font-light text-ink-soft leading-tight">
+                Awaiting voice
+              </p>
+              <p class="font-body italic text-[12.5px] text-ink-soft leading-snug mt-0.5">
+                Forge another mentor to fill the bench.
+              </p>
+            </div>
+          </div>
+          <div class="flex items-baseline gap-1.5 mt-2 mb-3 opacity-30">
+            <span class="font-display font-light text-[64px] leading-[0.85] text-ink-soft">
+              —
+            </span>
+          </div>
+          <p class="font-body italic text-[13px] leading-[1.55] text-ink-soft relative pl-3 border-l border-rule opacity-70">
+            Another voice could land here. Run{" "}
+            <a
+              href="/mentors"
+              class="not-italic font-mono text-[11px] text-seal hover:text-ink transition-colors"
+            >
+              /persona-forge
+            </a>{" "}
+            from any project clone.
+          </p>
         </article>
       ))
     }
