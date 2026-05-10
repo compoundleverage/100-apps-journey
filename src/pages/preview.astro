@@ -67,20 +67,20 @@ delete (signedExceptFailed as Record<string, unknown>).pg;
     !isDev ? (
       <article class="max-w-3xl mx-auto px-6 sm:px-10 py-32 text-center">
         <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-soft mb-6">
-          Development preview
+          开发预览
         </p>
         <p class="font-display text-2xl text-ink-soft italic mb-3">
-          This page is dev-only.
+          这是 dev-only 页面。
         </p>
-        <p class="font-body italic text-sm text-ink-soft max-w-md mx-auto leading-relaxed">
-          The LoadingPanel demo lives behind <code class="font-mono text-xs not-italic">import.meta.env.DEV</code> —
-          run <code class="font-mono text-xs not-italic">bun run dev</code> locally to view it.
+        <p class="font-body text-sm text-ink-soft max-w-md mx-auto leading-relaxed">
+          LoadingPanel demo 用 <code class="font-mono text-xs">import.meta.env.DEV</code> gate——
+          本地运行 <code class="font-mono text-xs">bun run dev</code> 才能看到。
         </p>
         <a
           href="/"
           class="inline-block mt-10 font-mono text-xs uppercase tracking-[0.2em] text-seal hover:text-ink transition-colors"
         >
-          ← Back to the pipeline
+          ← 回到实验池
         </a>
       </article>
     ) : (

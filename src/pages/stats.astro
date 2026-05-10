@@ -73,7 +73,7 @@ const maxBucket = Math.max(...scoreDistribution.map((d) => d.count), 1);
 const maxPersonaAvg = 10;
 ---
 
-<Layout title="The Standings · 100 Apps Journey">
+<Layout title="评分 · 100 Apps Journey">
   <article>
     <header class="border-b border-rule">
       <div
@@ -84,15 +84,15 @@ const maxPersonaAvg = 10;
           <p
             class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
           >
-            The Standings
+            评分
           </p>
         </div>
         <h1
           class="font-display text-[2.25rem] sm:text-[3.5rem] font-medium tracking-[-0.02em] leading-[0.95] max-w-3xl entry-rise"
           style="animation-delay: 0.05s"
         >
-          What the panel<br />
-          <span class="italic font-light text-ink-soft">tends to think.</span>
+          评审团<br />
+          <span class="italic font-light text-ink-soft">的整体倾向。</span>
         </h1>
       </div>
     </header>
@@ -101,10 +101,10 @@ const maxPersonaAvg = 10;
       total === 0 ? (
         <section class="max-w-3xl mx-auto px-6 sm:px-10 py-24 text-center">
           <p class="font-display text-2xl text-ink mb-3">
-            Nothing logged yet.
+            暂无登记。
           </p>
           <p class="font-body italic text-ink-soft">
-            The standings come into focus once entries accumulate.
+            随着条目积累，趋势会逐渐显形。
           </p>
         </section>
       ) : (
@@ -114,13 +114,11 @@ const maxPersonaAvg = 10;
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
               <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-4 mb-8">
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-                  Pipeline composition
+                  实验池构成
                 </h2>
-                <p class="font-body italic text-ink-soft text-sm sm:text-base max-w-xl">
-                  Where the {total} logged ideas currently stand. The shape
-                  of the curve tells you whether the pipeline is healthy —
-                  too many <em>ideas</em> is paralysis; too few <em>killed</em> is
-                  attachment.
+                <p class="font-body text-ink-soft text-sm sm:text-base max-w-xl">
+                  目前 {total} 个登记 idea 的分布。曲线形状告诉你管线健不健康——
+                  <em>想法</em> 太多是麻痹；<em>已撤</em> 太少是恋旧。
                 </p>
               </div>
 
@@ -137,10 +135,18 @@ const maxPersonaAvg = 10;
                           : key === "shipped"
                             ? "var(--color-shipped)"
                             : "var(--color-killed)";
+                    const label =
+                      key === "idea"
+                        ? "想法"
+                        : key === "building"
+                          ? "在做"
+                          : key === "shipped"
+                            ? "已上线"
+                            : "已撤";
                     return (
                       <div>
                         <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
-                          {key}
+                          {label}
                         </p>
                         <p
                           class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
@@ -164,12 +170,11 @@ const maxPersonaAvg = 10;
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
               <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-4 mb-8">
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-                  Panel averages
+                  评审均分
                 </h2>
-                <p class="font-body italic text-ink-soft text-sm sm:text-base max-w-xl">
-                  Each panelist's mean score across all logged ideas. Outliers
-                  matter more than the absolute number — who is consistently
-                  harder, who is the cheerleader, where do they diverge.
+                <p class="font-body text-ink-soft text-sm sm:text-base max-w-xl">
+                  每位评审在全部 idea 上的均分。离群点比绝对值更重要——
+                  谁始终更狠、谁是啦啦队、分歧在哪。
                 </p>
               </div>
 
@@ -208,7 +213,7 @@ const maxPersonaAvg = 10;
                           {avg !== null ? avg.toFixed(1) : "—"}
                         </p>
                         <p class="font-mono text-[9px] uppercase tracking-[0.15em] text-ink-soft mt-1">
-                          {count} eval{count === 1 ? "" : "s"}
+                          {count} 次评分
                         </p>
                       </div>
                     </li>
@@ -223,12 +228,11 @@ const maxPersonaAvg = 10;
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
               <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-4 mb-8">
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-                  Score distribution
+                  分数分布
                 </h2>
-                <p class="font-body italic text-ink-soft text-sm sm:text-base max-w-xl">
-                  How the {allEvals.length} individual evaluations cluster.
-                  A bimodal shape suggests strong opinions; a tight middle
-                  suggests the panel is being polite.
+                <p class="font-body text-ink-soft text-sm sm:text-base max-w-xl">
+                  {allEvals.length} 次单独评分的聚类形态。双峰说明立场鲜明，
+                  扎堆中位说明评审在客气。
                 </p>
               </div>
 
@@ -263,14 +267,14 @@ const maxPersonaAvg = 10;
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-10 sm:py-14 grid lg:grid-cols-2 gap-10 lg:gap-16">
               <div>
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-2">
-                  Top of the deck
+                  评分榜首
                 </h2>
                 <p class="font-body italic text-ink-soft text-sm mb-6">
-                  Highest panel averages.
+                  评审均分最高的几个。
                 </p>
                 {ranked.length === 0 ? (
                   <p class="font-body italic text-ink-soft text-sm">
-                    No scored entries yet.
+                    还没有评过的条目。
                   </p>
                 ) : (
                   <ol class="space-y-4">
@@ -296,14 +300,14 @@ const maxPersonaAvg = 10;
 
               <div>
                 <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-2">
-                  Most divisive
+                  分歧最大
                 </h2>
                 <p class="font-body italic text-ink-soft text-sm mb-6">
-                  Largest spread between best and worst score.
+                  最高分与最低分的差距最大。
                 </p>
                 {disagreed.length === 0 ? (
                   <p class="font-body italic text-ink-soft text-sm">
-                    Need at least two evaluations to spot disagreement.
+                    至少需要两次评分才能看出分歧。
                   </p>
                 ) : (
                   <ol class="space-y-4">

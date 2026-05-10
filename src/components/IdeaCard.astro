@@ -41,33 +41,33 @@ const showsPanel = showPanel(disclosure);
           !showsThesis && (
             <span
               class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft italic"
-              title="In stealth — disclosed once it ships or is killed."
+              title="隐身中——上线或撤掉后才公开"
             >
-              stealth
+              隐身
             </span>
           )
         }
       </div>
       {
         showsThesis ? (
-          <p class="font-body italic text-[15px] sm:text-base text-ink-soft leading-snug max-w-3xl">
+          <p class="font-body text-[15px] sm:text-base text-ink-soft leading-snug max-w-3xl">
             {data.thesis}
           </p>
         ) : (
-          <p class="font-body italic text-[15px] sm:text-base text-ink-soft leading-snug max-w-3xl">
-            <span class="opacity-60">— Thesis withheld until the entry is built or shipped.</span>
+          <p class="font-body text-[15px] sm:text-base text-ink-soft leading-snug max-w-3xl">
+            <span class="opacity-60">—— thesis 在动工或上线前不公开。</span>
           </p>
         )
       }
       <div
         class="flex items-center gap-3 sm:gap-4 mt-3 font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft flex-wrap"
       >
-        <span>Added {dateStr}</span>
+        <span>记录 {dateStr}</span>
         {
           showsThesis && (
             <>
               <span class="opacity-50">·</span>
-              <span>Budget {data.time_budget}</span>
+              <span>预算 {data.time_budget}</span>
             </>
           )
         }
@@ -92,19 +92,19 @@ const showsPanel = showPanel(disclosure);
               {avg}
             </span>
             <span class="font-mono text-[9px] uppercase tracking-[0.15em] text-ink-soft">
-              avg / 10
+              均分 / 10
             </span>
           </>
         ) : showsPanel ? (
           <span class="font-mono text-[10px] text-ink-soft italic">
-            Pending
+            待评
           </span>
         ) : (
           <span
             class="font-mono text-[10px] text-ink-soft italic"
-            title="Panel withheld until shipped or killed."
+            title="评审在上线或撤掉前不公开"
           >
-            sealed
+            封存
           </span>
         )
       }

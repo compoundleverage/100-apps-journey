@@ -59,20 +59,41 @@ interface MentorMember {
   agentic_protocol?: AgenticProtocol;
 }
 
+// Final output rules (Chinese, first-person mentor → second-person user).
+// Appended last so it supersedes any English/third-person format spec embedded
+// in the mentor's frontmatter system_prompt.
+const VOICE_OVERRIDE = `
+---
+
+输出规则覆盖（最高优先级，覆盖上文任何关于格式 / 语言 / 人称的指令）：
+
+返回严格 JSON：{"score": 1-10, "reasoning": "<2-3 句中文>"}
+
+reasoning 必须满足：
+- 用中文书写
+- 第一人称称呼自己：我看了 / 我会担心 / 如果让我做 / 我建议你
+- 第二人称称呼提案者：你这个 idea / 你想清楚了吗 / 你的 kill criteria / 你考虑过…吗
+- 禁止第三人称转述（不要写"X 可能会说"、"他会指出"、"这位 founder 可能会"）
+- 直接以这个人物的口吻对提案者讲话，像 mentor 给 mentee 当面反馈
+- 保留原本的 voice DNA：节奏、签名比喻、断句、专属用词、典型修辞——只是切到中文 + 直接对话
+- 该锋利就锋利，不软化、不客套、不公文体
+- score 必须严格按这个人的高标准给，不要为了 reasonable 而 inflation`;
+
 /**
  * Build the final system prompt sent to the API.
  * For v2-distilled mentors with agentic_protocol, append the research dimensions
  * as an internal-only checklist. Output format remains JSON {score, reasoning}.
+ *
+ * VOICE_OVERRIDE is appended last so it supersedes any prior format spec in the
+ * mentor's own system_prompt (some early ones encoded an English JSON spec).
  */
 function composeSystemPrompt(m: MentorMember): string {
-  if (!m.agentic_protocol?.research_dimensions?.length) {
-    return m.system_prompt;
-  }
-  const dimensions = m.agentic_protocol.research_dimensions
-    .map((d) => `- ${d.name}: ${d.looks_for.join(" / ")}`)
-    .join("\n");
-
-  return `${m.system_prompt}
+  let prompt = m.system_prompt;
+  if (m.agentic_protocol?.research_dimensions?.length) {
+    const dimensions = m.agentic_protocol.research_dimensions
+      .map((d) => `- ${d.name}: ${d.looks_for.join(" / ")}`)
+      .join("\n");
+    prompt += `
 
 ---
 
@@ -81,6 +102,8 @@ Internal checklist before scoring (do NOT output this; reason silently against e
 ${dimensions}
 
 For each dimension, ask: does the idea pass, fail, or sit unclear? Use that internal pass/fail/unclear pattern to calibrate the score. Do not enumerate dimensions in your output — produce the JSON with score + reasoning only.`;
+  }
+  return prompt + VOICE_OVERRIDE;
 }
 
 async function loadPanel(): Promise<MentorMember[]> {
@@ -170,18 +193,18 @@ async function loadIdeas(filter?: string): Promise<IdeaFile[]> {
 
 function buildUserMessage(idea: IdeaFile): string {
   const d = idea.data;
-  return `Title: ${d.title}
-Status: ${d.status}
-Time budget: ${d.time_budget}
-Tags: ${Array.isArray(d.tags) ? (d.tags as string[]).join(", ") : ""}
+  return `标题：${d.title}
+状态：${d.status}
+时间预算：${d.time_budget}
+标签：${Array.isArray(d.tags) ? (d.tags as string[]).join("、") : ""}
 
-Thesis:
+Thesis：
 ${d.thesis}
 
-Kill criteria:
+Kill criteria：
 ${d.kill_criteria}
 
-Body:
+正文：
 ${idea.body.trim()}`;
 }
 

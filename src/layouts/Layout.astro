@@ -8,7 +8,7 @@ interface Props {
 
 const {
   title,
-  description = "A 100-day public ledger of small app experiments, evaluated by an AI panel of investors.",
+  description = "公开的 100 天小实验日志，每个 idea 都由 AI 模拟的真人投资人评分。",
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
@@ -17,7 +17,7 @@ const isActive = (path: string) =>
 ---
 
 <!doctype html>
-<html lang="en">
+<html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -26,7 +26,7 @@ const isActive = (path: string) =>
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Spectral:ital,wght@0,400;0,500;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Spectral:ital,wght@0,400;0,500;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&family=Noto+Serif+SC:wght@400;500;600;700&display=swap"
     />
     <title>{title}</title>
     <meta name="description" content={description} />
@@ -59,25 +59,25 @@ const isActive = (path: string) =>
             href="/"
             class={`hover:text-seal transition-colors duration-200 ${isActive("/") ? "text-ink" : "text-ink-soft"}`}
           >
-            Pipeline
+            实验池
           </a>
           <a
             href="/stats"
             class={`hover:text-seal transition-colors duration-200 ${isActive("/stats") ? "text-ink" : "text-ink-soft"}`}
           >
-            Standings
+            评分
           </a>
           <a
             href="/mentors"
             class={`hover:text-seal transition-colors duration-200 ${isActive("/mentors") ? "text-ink" : "text-ink-soft"}`}
           >
-            Bench
+            顾问团
           </a>
           <a
             href="/about"
             class={`hover:text-seal transition-colors duration-200 ${isActive("/about") ? "text-ink" : "text-ink-soft"}`}
           >
-            Method
+            方法
           </a>
         </nav>
       </div>
@@ -95,35 +95,35 @@ const isActive = (path: string) =>
           <p class="font-display font-medium text-ink mb-1 text-lg">
             100 Apps Journey
           </p>
-          <p class="font-body italic text-sm text-ink-soft leading-snug">
-            A public ledger of small experiments, evaluated by an AI panel.
+          <p class="font-body text-sm text-ink-soft leading-snug">
+            公开的小实验日志，每个 idea 由 AI 模拟的几位真人投资人评分。
           </p>
         </div>
         <div>
           <p
             class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3"
           >
-            Sections
+            目录
           </p>
           <ul class="font-body text-sm space-y-1.5">
             <li>
               <a href="/" class="hover:text-seal transition-colors"
-                >The Pipeline</a
+                >实验池</a
               >
             </li>
             <li>
               <a href="/stats" class="hover:text-seal transition-colors"
-                >The Standings</a
+                >评分</a
               >
             </li>
             <li>
               <a href="/mentors" class="hover:text-seal transition-colors"
-                >The Bench</a
+                >顾问团</a
               >
             </li>
             <li>
               <a href="/about" class="hover:text-seal transition-colors"
-                >Methodology</a
+                >方法论</a
               >
             </li>
           </ul>
@@ -132,14 +132,13 @@ const isActive = (path: string) =>
           <p
             class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3"
           >
-            On the Panel
+            关于评审
           </p>
           <p
-            class="font-body italic text-xs text-ink-soft leading-relaxed max-w-sm sm:ml-auto"
+            class="font-body text-xs text-ink-soft leading-relaxed max-w-sm sm:ml-auto"
           >
-            Investor evaluations on this site are AI-generated simulations of
-            how each person might evaluate, based on their public writings and
-            talks. They are not actual statements or endorsements.
+            本站投资人评分均由 AI 模拟生成，依据是他们公开的写作、谈话和思考方式，
+            不代表本人的真实立场或表态。
           </p>
         </div>
       </div>
@@ -148,7 +147,7 @@ const isActive = (path: string) =>
           class="max-w-6xl mx-auto px-6 sm:px-10 py-4 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft"
         >
           <span>№ 100 / Day {`<= 100`}</span>
-          <span>Set in Fraunces · Spectral · JetBrains Mono</span>
+          <span>排版 · Fraunces · Spectral · Noto Serif SC · JetBrains Mono</span>
         </div>
       </div>
     </footer>

@@ -45,26 +45,17 @@ const lgColsClass =
 ---
 
 <section class="space-y-6">
-  <header
-    class="flex items-end justify-between gap-4 border-b border-rule pb-3"
-  >
-    <div>
-      <p
-        class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
-      >
-        The Panel · {mentors.length} Voices
-      </p>
-      <h2
-        class="font-display text-2xl sm:text-3xl font-medium tracking-tight text-ink"
-      >
-        What the Investors Said
-      </h2>
-    </div>
+  <header class="border-b border-rule pb-3">
     <p
-      class="hidden sm:block font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft text-right"
+      class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
     >
-      AI Simulation<br />Not Actual Statements
+      评审团 · {mentors.length} 位
     </p>
+    <h2
+      class="font-display text-2xl sm:text-3xl font-medium tracking-tight text-ink"
+    >
+      投资人怎么说
+    </h2>
   </header>
 
   <div
@@ -72,26 +63,11 @@ const lgColsClass =
   >
     {
       ordered.map(({ mentor, evaluation, isStale }) => (
-        <article class="relative bg-paper px-5 pt-6 pb-6 flex flex-col">
+        <article class="relative bg-paper px-5 pt-7 pb-6 flex flex-col">
           <div
             class="absolute top-0 left-0 right-0 h-[3px]"
             style={`background: ${mentor.accent}`}
           />
-
-          <p class="font-mono text-[8.5px] uppercase tracking-[0.2em] text-ink-soft mb-5 flex items-center gap-1.5">
-            <span
-              class="inline-block w-1 h-1 rounded-full"
-              style={`background: ${mentor.accent}`}
-            />
-            AI Sim · {mentor.slug}
-            <span
-              class="ml-auto"
-              style={`color: ${mentor.accent}`}
-              title={mentor.version}
-            >
-              {versionGlyph(mentor.version)}
-            </span>
-          </p>
 
           <div class="flex items-start gap-3 mb-3">
             <span
@@ -100,13 +76,22 @@ const lgColsClass =
             >
               {mentor.avatar_initials}
             </span>
-            <div class="min-w-0">
-              <a
-                href={`/mentors/${mentor.slug}`}
-                class="font-display font-semibold text-ink leading-tight hover:text-seal transition-colors"
-              >
-                {mentor.name}
-              </a>
+            <div class="min-w-0 flex-1">
+              <div class="flex items-baseline gap-2">
+                <a
+                  href={`/mentors/${mentor.slug}`}
+                  class="font-display font-semibold text-ink leading-tight hover:text-seal transition-colors"
+                >
+                  {mentor.name}
+                </a>
+                <span
+                  class="text-[11px] leading-none"
+                  style={`color: ${mentor.accent}`}
+                  title={mentor.version === "v2-distilled" ? "完整蒸馏" : "v1 草稿"}
+                >
+                  {versionGlyph(mentor.version)}
+                </span>
+              </div>
               <p class="font-body italic text-[12.5px] text-ink-soft leading-snug mt-0.5">
                 {mentor.short_bio}
               </p>
@@ -128,13 +113,13 @@ const lgColsClass =
                 {isStale && (
                   <span
                     class="ml-auto font-mono text-[9px] uppercase tracking-[0.15em] text-ink-soft italic"
-                    title={`Generated against mentor ${evaluation.mentor_version}; current is ${mentor.version}.`}
+                    title={`本评分基于 ${evaluation.mentor_version}；当前 mentor 已升级到 ${mentor.version}，可重新评估。`}
                   >
-                    stale
+                    过期
                   </span>
                 )}
               </div>
-              <p class="font-body italic text-[13.5px] leading-[1.55] text-ink relative pl-3 border-l border-rule">
+              <p class="font-body text-[13.5px] leading-[1.7] text-ink relative pl-3 border-l border-rule">
                 {evaluation.reasoning}
               </p>
             </>
@@ -144,7 +129,7 @@ const lgColsClass =
                 —
               </span>
               <p class="font-body italic text-[13px] text-ink-soft mt-3">
-                Awaiting the panel's review.
+                等待评审。
               </p>
             </div>
           )}
@@ -161,25 +146,18 @@ const lgColsClass =
             class="absolute top-0 left-0 right-0 h-[3px] opacity-20"
             style="background: var(--color-rule)"
           />
-          <p class="font-mono text-[8.5px] uppercase tracking-[0.2em] text-ink-soft mb-5 flex items-center gap-1.5 opacity-60">
-            <span
-              class="inline-block w-1 h-1 rounded-full"
-              style="background: var(--color-rule)"
-            />
-            Empty seat
-          </p>
-          <div class="flex items-start gap-3 mb-3 opacity-40">
+          <div class="flex items-start gap-3 mb-3 mt-1 opacity-40">
             <span
               class="flex items-center justify-center w-9 h-9 rounded-full border border-dashed border-rule shrink-0 mt-0.5 text-ink-soft font-mono text-[14px]"
             >
               ◌
             </span>
             <div class="min-w-0">
-              <p class="font-display italic font-light text-ink-soft leading-tight">
-                Awaiting voice
+              <p class="font-display font-light text-ink-soft leading-tight">
+                席位待补
               </p>
-              <p class="font-body italic text-[12.5px] text-ink-soft leading-snug mt-0.5">
-                Forge another mentor to fill the bench.
+              <p class="font-body text-[12.5px] text-ink-soft leading-snug mt-0.5">
+                蒸馏一位新顾问加入。
               </p>
             </div>
           </div>
@@ -188,15 +166,15 @@ const lgColsClass =
               —
             </span>
           </div>
-          <p class="font-body italic text-[13px] leading-[1.55] text-ink-soft relative pl-3 border-l border-rule opacity-70">
-            Another voice could land here. Run{" "}
+          <p class="font-body text-[13px] leading-[1.6] text-ink-soft relative pl-3 border-l border-rule opacity-70">
+            还有一位评审可以加入。在项目里跑{" "}
             <a
               href="/mentors"
-              class="not-italic font-mono text-[11px] text-seal hover:text-ink transition-colors"
+              class="font-mono text-[11px] text-seal hover:text-ink transition-colors"
             >
               /persona-forge
             </a>{" "}
-            from any project clone.
+            。
           </p>
         </article>
       ))
@@ -204,13 +182,10 @@ const lgColsClass =
   </div>
 
   <p
-    class="font-body italic text-xs text-ink-soft max-w-3xl pt-2 leading-relaxed"
+    class="font-body text-xs text-ink-soft max-w-3xl pt-2 leading-relaxed"
   >
-    Each card above is generated by prompting Claude to reason in the voice of
-    the named individual, drawing on their public writings and talks. Use the
-    contrasts and disagreements as the signal — and remember none of these are
-    actual statements from the people pictured. <span class="not-italic">◌</span>
-    marks a v1-bootstrap sketch; <span class="not-italic">●</span> marks a fully
-    forged mentor.
+    每张评分卡都是用 Claude 以这个人物的口吻 prompt 后生成的，依据是他们公开的写作、谈话和思考方式。
+    重叠和分歧本身就是信号——但请记得，这些都不是本人的真实表态。
+    <span>◌</span> 是 v1 草稿，<span>●</span> 是完整蒸馏的 mentor。
   </p>
 </section>

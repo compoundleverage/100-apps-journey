@@ -14,7 +14,7 @@ const distilled = mentors.filter((m) => m.version === "v2-distilled").length;
 const bootstraps = total - distilled;
 ---
 
-<Layout title="The Panel · 100 Apps Journey">
+<Layout title="顾问团 · 100 Apps Journey">
   <article>
     <header class="border-b border-rule">
       <div
@@ -25,22 +25,21 @@ const bootstraps = total - distilled;
           <p
             class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
           >
-            The Bench
+            顾问团
           </p>
         </div>
         <h1
           class="font-display text-[2.5rem] sm:text-[3.5rem] font-medium tracking-[-0.02em] leading-[0.95] max-w-3xl entry-rise"
           style="animation-delay: 0.05s"
         >
-          The voices on the panel.
+          评审席上的几个声音。
         </h1>
         <p
-          class="font-body italic text-base sm:text-lg text-ink-soft max-w-2xl leading-snug mt-6 entry-rise"
+          class="font-body text-base sm:text-lg text-ink-soft max-w-2xl leading-snug mt-6 entry-rise"
           style="animation-delay: 0.1s"
         >
-          Each idea is evaluated by AI simulations of these real builders.
-          They reason in their own voice, draw on their own mental models, and
-          disagree productively.
+          每个 idea 都由这几位真人 mentor 的 AI 模拟评分。他们各自用自己的口吻、
+          自己的 mental model 思考——分歧本身就是信号。
         </p>
       </div>
     </header>
@@ -49,10 +48,10 @@ const bootstraps = total - distilled;
       total === 0 ? (
         <section class="max-w-3xl mx-auto px-6 sm:px-10 py-24 text-center">
           <p class="font-display text-3xl text-ink-soft italic mb-6">
-            The bench is empty.
+            顾问团暂时空着。
           </p>
           <p class="font-body italic text-sm text-ink-soft">
-            Forge the first mentor below.
+            下方蒸馏第一位 mentor。
           </p>
         </section>
       ) : (
@@ -61,15 +60,15 @@ const bootstraps = total - distilled;
             <div class="max-w-6xl mx-auto px-6 sm:px-10 py-6">
               <div class="flex flex-wrap items-baseline gap-x-8 gap-y-3 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
                 <span>
-                  <span class="text-ink tabular-nums">{total}</span> on the bench
+                  在席 <span class="text-ink tabular-nums">{total}</span> 位
                 </span>
                 <span class="opacity-50">·</span>
                 <span>
-                  <span class="text-ink tabular-nums">{distilled}</span> ● fully forged
+                  <span class="text-ink tabular-nums">{distilled}</span> ● 完整蒸馏
                 </span>
                 <span class="opacity-50">·</span>
                 <span>
-                  <span class="text-ink tabular-nums">{bootstraps}</span> ◌ in sketch
+                  <span class="text-ink tabular-nums">{bootstraps}</span> ◌ 草稿态
                 </span>
               </div>
             </div>
@@ -106,28 +105,28 @@ const bootstraps = total - distilled;
                         <span class="text-ink tabular-nums">
                           {mentor.mental_models.length}
                         </span>{" "}
-                        mental models
+                        心智模型
                       </span>
                       <span class="opacity-50">·</span>
                       <span>
                         <span class="text-ink tabular-nums">
                           {mentor.decision_heuristics.length}
                         </span>{" "}
-                        heuristics
+                        启发式
                       </span>
                       <span class="opacity-50">·</span>
                       <span>
                         <span class="text-ink tabular-nums">
                           {mentor.primary_sources.length}
                         </span>{" "}
-                        primary sources
+                        一手来源
                       </span>
                     </div>
                   </div>
 
                   <div class="hidden sm:flex flex-col items-end gap-1 shrink-0 self-center text-right">
                     <span class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                      {mentor.version === "v2-distilled" ? "Forged" : "Sketch"}
+                      {mentor.version === "v2-distilled" ? "完整态" : "草稿态"}
                     </span>
                     <span class="font-mono text-[10px] tabular-nums text-ink-soft">
                       {mentor.research_date.toISOString().slice(0, 10)}
@@ -147,23 +146,22 @@ const bootstraps = total - distilled;
         <div class="flex items-center gap-3 mb-5">
           <span class="block w-6 h-px bg-seal"></span>
           <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal">
-            Forge a new mentor
+            蒸馏新 mentor
           </p>
         </div>
         <h2 class="font-display text-2xl sm:text-3xl font-medium tracking-tight mb-4 leading-[1.15]">
-          The bench is closed by design.
+          顾问团默认封闭。
         </h2>
-        <p class="font-body italic text-sm sm:text-base text-ink-soft max-w-2xl leading-snug mb-10">
-          There is no "Add" button. Each mentor is distilled in Claude Code
-          through a six-agent research pipeline. Type a name and we'll give
-          you the exact command to paste — the pipeline does the rest.
+        <p class="font-body text-sm sm:text-base text-ink-soft max-w-2xl leading-snug mb-10">
+          这里没有"添加"按钮。每位 mentor 都通过 Claude Code 里的 6-agent 调研 pipeline 蒸馏出来。
+          输入一个名字，下面会给你对应的命令——粘贴执行即可。
         </p>
 
         <!-- Form -->
         <div class="space-y-6 max-w-2xl">
           <label class="block">
             <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2 block">
-              Name
+              名字
             </span>
             <input
               id="mentor-name"
@@ -176,7 +174,7 @@ const bootstraps = total - distilled;
 
           <div>
             <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2 block">
-              Paste in Claude Code
+              粘贴到 Claude Code
             </span>
             <div class="flex items-stretch gap-px bg-rule border border-rule">
               <code
@@ -188,14 +186,14 @@ const bootstraps = total - distilled;
                 type="button"
                 class="bg-paper px-4 py-3 font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hover:text-seal transition-colors shrink-0"
               >
-                Copy
+                复制
               </button>
             </div>
             <p
               id="copy-feedback"
               class="font-mono text-[10px] uppercase tracking-[0.2em] text-seal mt-2 h-3 opacity-0 transition-opacity"
             >
-              Copied to clipboard
+              已复制到剪贴板
             </p>
           </div>
         </div>
@@ -204,46 +202,43 @@ const bootstraps = total - distilled;
         <div class="mt-12 pt-6 border-t border-rule grid sm:grid-cols-2 gap-x-10 gap-y-6 max-w-3xl">
           <div>
             <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3">
-              Prerequisites
+              前置条件
             </p>
             <ul class="font-body text-sm text-ink space-y-1.5">
-              <li><span class="text-ink-soft mr-1">—</span>Node 22+ with Bun ≥ 1.1</li>
-              <li><span class="text-ink-soft mr-1">—</span>Claude Code installed and this project open</li>
+              <li><span class="text-ink-soft mr-1">—</span>Node 22+ 和 Bun ≥ 1.1</li>
+              <li><span class="text-ink-soft mr-1">—</span>已安装 Claude Code 并打开本项目</li>
               <li>
                 <span class="text-ink-soft mr-1">—</span>
-                <code class="font-mono text-xs">.env</code> with{" "}
+                <code class="font-mono text-xs">.env</code> 里有{" "}
                 <code class="font-mono text-xs">ANTHROPIC_API_KEY</code>
               </li>
             </ul>
           </div>
           <div>
             <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3">
-              Cost &amp; time
+              成本与耗时
             </p>
             <ul class="font-body text-sm text-ink space-y-1.5">
-              <li><span class="text-ink-soft mr-1">—</span>≈ $1–2 per forge in API charges</li>
-              <li><span class="text-ink-soft mr-1">—</span>5–15 min execution</li>
+              <li><span class="text-ink-soft mr-1">—</span>每次蒸馏约 $1–2 API 费用</li>
+              <li><span class="text-ink-soft mr-1">—</span>执行约 5–15 分钟</li>
               <li>
-                <span class="text-ink-soft mr-1">—</span>plus 30 min of attention if you review checkpoints honestly
+                <span class="text-ink-soft mr-1">—</span>外加约 30 分钟认真 review 各 checkpoint 的时间
               </li>
             </ul>
           </div>
         </div>
 
-        <p class="font-body italic text-xs text-ink-soft mt-10 leading-relaxed">
-          The pipeline distills mental models, decision heuristics, and
-          expression DNA from public sources — books, talks, interviews,
-          microblogs — scoring each on a four-dimension reliability rubric.
-          Output lands in{" "}
-          <code class="font-mono text-xs not-italic">
+        <p class="font-body text-xs text-ink-soft mt-10 leading-relaxed">
+          Pipeline 从公开来源（书、演讲、采访、社媒）蒸馏出 mental model、决策启发式和表达 DNA，
+          每条来源按 4 维可靠性 rubric 评分。结果落到{" "}
+          <code class="font-mono text-xs">
             src/content/mentors/&lt;slug&gt;/
-          </code>{" "}
-          and the new mentor immediately joins the panel. To resume an
-          interrupted run:{" "}
-          <code class="font-mono text-xs not-italic text-seal">
+          </code>
+          ，新 mentor 自动加入评审团。中断后恢复用：{" "}
+          <code class="font-mono text-xs text-seal">
             /persona-forge --resume &lt;slug&gt;
           </code>
-          .
+          。
         </p>
       </div>
     </section>

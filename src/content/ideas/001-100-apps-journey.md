@@ -23,158 +23,92 @@ investor_evaluations:
     mentor_version: v2-distilled
     score: 4
     reasoning: >-
-      The builder would likely note that this is a cabinet where the front looks
-      interesting and the back is someone else's wood — Claude's API owns the
-      experience the moment Anthropic changes a pricing tier or a safety filter,
-      and that's not a product, that's a tenant arrangement. The 'panel of
-      investors' conceit might strike him as clever in the way a hall of mirrors
-      is clever: six simulations of judgment stacked inside a simulation of a
-      journey, and somewhere in that recursion the actual user on Tuesday
-      morning disappears entirely — who is riding this bicycle, and where are
-      they going? He would also want to know what got killed; the write-up lists
-      everything that was added and nothing that was refused, which is the tell
-      of a person who hasn't focused yet — a product is the pile of nos, not the
-      pile of yeses — and shipping in one day is real craftsmanship only if the
-      one day was ruthless, not just fast.
-    generated_at: '2026-05-10T03:55:58.368Z'
+      我看了你的整个 setup，问题不在执行力——一天 ship
+      出来，这我承认。问题在你把元层（tracker）当成产品本身来卖，这是个陷阱：你造了一个放自行车的车库，然后告诉我车库就是那辆自行车。真正的问题是：你的
+      panel of investors 里有个'v2-distilled 的 Steve Jobs'——你有没有想过，一个把名人人格蒸馏进
+      prompt
+      然后批量签发评分卡的机器，和你在街头卖假签名海报的人，区别在哪里？差异化不在于角色数量，在于判断的真实重量。你告诉我你杀掉了什么？kill
+      criteria 写的是节奏撑不住就撤——那只是 schedule 风险，不是 product discipline。你有没有问过自己：如果把
+      panel 砍到一个人，这个产品还剩什么？如果答案是'没什么'，你就知道内核空在哪里。
+    generated_at: '2026-05-10T21:13:24.894Z'
     model: claude-sonnet-4-6
   - persona: karpathy
     mentor_version: v2-distilled
-    score: 6
+    score: 4
     reasoning: >-
-      The meta-recursiveness is genuinely clever — the tracker hosts the
-      journey, the journey validates the tracker, Day 1 ships the infrastructure
-      for Days 2-100, that's clean design thinking and I respect the commit. The
-      'panel of real AI simulations with visible disagreement' is actually the
-      right instinct: divergence between simulated-Karpathy and simulated-Naval
-      on the same idea IS the information, not noise, and labeling it clearly as
-      simulation is the right epistemic hygiene. But I'd push hard on a few
-      things: the persona-forge pipeline (6 research agents, 3 validators,
-      'v2-distilled Jobs') sounds like it produces confident-sounding slop
-      unless there's a real eval — like, what's the ground truth you're
-      distilling against? A persona is only as good as the behavioral test set
-      that validates it, and 'quality gate' without specifying what passes or
-      fails the gate is vibes-driven development. The 200-line
-      build-from-scratch test also bites here: the Astro + markdown + Claude API
-      stack is fine, but the actual moat is supposed to be the persona quality,
-      and I suspect the persona quality is not robustly measured anywhere —
-      you'd know if you tried to catch a known misfire. The other concern is the
-      autonomy slider: this sits comfortably in 'works.any()' territory right
-      now (cool demo, first few evals feel sharp) and getting to 'works.all()' —
-      where the simulated panel is reliably more useful than just asking Claude
-      directly — requires exactly the kind of boring eval infrastructure that a
-      one-day ship can't contain. The 100-app pace is also a distribution bet
-      more than a product bet, which is fine, but it means the interesting
-      question isn't 'is this a good tracker' but 'does the narrative compound'
-      — and that's a distribution/writing problem, not an engineering one, so
-      the agent parallelism story is a little beside the point.
-    generated_at: '2026-05-10T03:56:03.753Z'
+      我看了你这个 idea，坦白说，核心问题不是叙事，是 eval——你模拟了我，但你有没有一套 ground-truth
+      测试集来验证这个模拟是否在说有意义的话，还是在产出听起来像 Karpathy 但实际上是 vibes 的 slop？这是我第一个会问的问题，而你的
+      thesis 完全跳过了它。你把 'AI simulation 明确标注'
+      当成免责牌，但这不够——一个糟糕的模拟比没有模拟更有害，因为它给错误的信心加了名人背书的包装，这是比 hallucination
+      更危险的东西。差异化的赌注我理解，'工具即内容' 这个框架我也觉得有意思，但你描述的 6-agent pipeline、三重验证、quality
+      gate 这些词听起来很系统，却完全没有告诉我一个具体的 prompt → output → 评估 loop
+      长什么样——如果你给我看一张真实的评分卡、一个失败案例、以及你怎么知道它失败了，分数会高很多；现在这个 proposal 本质上是在说 '我
+      ship 了一个 build-in-public tracker，里面有 AI 模拟名人'，这距离 '有真实差异化的产品' 还差一个
+      evals-first 的重构。
+    generated_at: '2026-05-10T21:13:27.446Z'
     model: claude-sonnet-4-6
   - persona: musk
     mentor_version: v2-distilled
     score: 4
     reasoning: >-
-      This might score higher if the 100-app constraint were actually
-      load-bearing — but a tracker that tracks its own trackers is recursive
-      vanity, not a civilizational primitive. The 'differentiation' is a panel
-      of AI personas scoring app ideas, which costs essentially $0 in tokens and
-      maybe 40 hours to build the persona-forge pipeline — low idiot index, fine
-      — but the output is entertainment, not leverage on any physical or
-      informational bottleneck that matters. Most likely outcome: compelling
-      Twitter content for 6 weeks, abandoned at app #23 when the narrative
-      exhausts itself and no one is paying for the scores.
-    generated_at: '2026-05-10T03:55:56.113Z'
+      我看了，第一个问题：这东西的 raw material cost 是什么？Claude API token 加 Astro
+      模板，边际成本接近零，但你的 idiot index 不在钱上——在注意力上。你花了一天建了一个记录你要建什么的工具，这是经典的 meta-work
+      陷阱，Ryan Holiday 叫它 'feel like progress without making progress'。第二个问题：你 AI
+      模拟的这六个人，包括我，每一个都只有 prompt 背后的概率分布——没有任何新信息被生成，只有已有信息被重排，用户第 3
+      次看完评分卡就会意识到这个，留存曲线会在那里断掉。你的 kill criteria
+      写得不错，但它测的是你的执行纪律，不是这个产品是否值得存在——这两件事不一样。真正的问题是：如果 100 个 app
+      里有一个能改变某件重要的事，那个 app 是什么，为什么你不从那里开始？
+    generated_at: '2026-05-10T21:13:25.238Z'
     model: claude-sonnet-4-6
   - persona: garry-tan
     mentor_version: v2-distilled
-    score: 6
+    score: 4
     reasoning: >-
-      Love this — and the meta-move of making the tracker itself App #001 is
-      genuinely clever; it's the kind of 'ship the scaffolding first' instinct
-      that Brian Chesky showed when he manually photographed those first Airbnb
-      listings himself. The AI-panel-as-content angle is real differentiation
-      and the build-in-public narrative loop is a legitimate distribution wedge.
-      That said, I'd want to push hard on one thing: right now this looks like a
-      vitamin for builders who like vibes, not a painkiller for a specific
-      person with a specific Tuesday-morning problem — the 'panel of investors'
-      feature is genuinely fun, but fun isn't pull, and I'd worry the 100-day
-      commitment is doing emotional work that product-market fit should be
-      doing. The deeper question I'd ask: who is the *second* user — not you,
-      not a friend who's cheering — but the person who finds this cold, reads
-      one scored idea card, and immediately thinks 'I need to submit my idea
-      right now'? If you can name that person and show me three DMs from them
-      this week, the score goes to 8 fast; if you can't, this is a beautiful
-      content experiment that might not compound into anything default-alive,
-      and the kill criteria you've set (20 ideas in 4 weeks) measures *your*
-      output velocity, not user pull — which is the wrong metric to be watching.
-    generated_at: '2026-05-10T03:56:01.313Z'
+      我看了你这个 idea，有一句话想直接说：你把「分发即产品」这个洞察讲得很清楚，build-in-public +
+      panel-of-AI-judges 的叙事结构有真实的拉力——但这是一个维生素，不是止痛药。你告诉我的第一个用户是谁？不是「有 100 app
+      野心的 builder」这种 archetype，是一个具体的人，他今天早上 9 点在做什么、在哪里痛到会立刻打开你的 app
+      付钱？我会担心的核心问题是：你模拟了 Garry Tan / PG / Jobs，但模拟质量的天花板是 persona-forge
+      的评研深度，而那个深度今天还不存在——evals 没有，ground truth 没有，你怎么知道「Karpathy 给 4 分」和「Jobs 给
+      7 分」的分歧是洞见而不是幻觉？最后一个真正锋利的问题留给你想清楚：Journey 本身是 content 这件事没错，但 content
+      的复利靠的是受众增长，而不是 app 数量增长——你的 kill criteria 量的是 ideas
+      列表，量的不是「有多少人每周回来看你的下一张评分卡」，你把对的东西当 kill criteria 了吗？
+    generated_at: '2026-05-10T21:13:27.327Z'
     model: claude-sonnet-4-6
   - persona: naval
     mentor_version: v2-distilled
-    score: 7
+    score: 6
     reasoning: >-
-      The founder might observe that the real asset here is not the tracker but
-      the compounding narrative itself — each shipped app is a unit of media
-      leverage, and media is permissionless; that is the strongest thing about
-      this. The AI-persona panel is a clever forcing function: it makes the
-      judgment legible, creates genuine overlap-and-disagreement content, and
-      embeds a taste layer that a generic team could not replicate without the
-      same obsessive research into how these specific minds actually think.
-      Where it sits unclear is the long-term game — a hundred apps in a hundred
-      days is a sprint, and sprints do not compound; the question is whether the
-      pipeline produces one or two things with genuine code leverage underneath,
-      or whether the whole journey resolves into a content artifact that stops
-      earning the day the founder stops shipping. The specific knowledge is
-      real, the media leverage is real, but the founder should ask early: which
-      of these hundred bets is the one they would run for ten years.
-    generated_at: '2026-05-10T03:55:59.265Z'
+      我看了你这个 idea——叙事本能是对的，Journey 即 content 这个直觉我认同，分发和故事才是 2025
+      年真正的稀缺。但我会担心一件事：你把大量精力花在 panel
+      的仿真保真度上，却没有回答一个更根本的问题——这个资产在你不在的时候会自己生长吗？Build-in-public 的复利来自受众的积累，不来自
+      app 本身的精巧；如果 100 天之后你停更，这个东西剩下什么？你的 kill criteria 写得很工程师——以条数和天数为标准——但真正的
+      kill criteria 应该是：第 30 天有没有人因为看了你的 panel
+      评分而改变了自己的决策。工具加叙事的组合是对的，但叙事必须真的在外面流动，不能只活在你自己的 pipeline 里。
+    generated_at: '2026-05-10T21:13:24.201Z'
     model: claude-sonnet-4-6
   - persona: pg
     mentor_version: v2-distilled
-    score: 5
+    score: 4
     reasoning: >-
-      There's something genuinely interesting here — the idea that the journey
-      itself is the product, that app #001 has to exist to host apps #2-100, has
-      a nice recursive honesty to it, like Stripe building their first internal
-      payments tool. But I'd note that 'build in public with AI-simulated
-      investor panels' is a very clean idea, almost suspiciously clean, and as I
-      wrote in 'How to Get Startup Ideas', the best ideas usually look bad at
-      first, not like a polished content strategy. The real question is whether
-      anyone besides the founder wants to read these AI-Paul-Graham scoring
-      cards on Tuesday morning — or whether this is a sophisticated way of
-      making a very good personal blog that will accumulate exactly the audience
-      of people who also want to do 100-app challenges, which is a fine outcome
-      but not a startup. The 'users can forge their own mentors' feature is the
-      most interesting thread here, because that's where actual schlep hides,
-      and if that part works well enough to be genuinely useful to someone else,
-      that might be the real product.
-    generated_at: '2026-05-10T03:55:59.074Z'
+      我看了你这个 idea，最大的问题不是执行力——你一天 ship
+      出来了，这是真的——而是你的差异化核心本质上是内容产品，不是工具产品，但你在用工具产品的框架来想它。AI 模拟 PG、Musk、Karpathy
+      评分这件事，第一次看有意思，第三次就是装饰，因为用户没有理由回来——他们 ideas 有限，panel 是固定的，novelty
+      消耗完就没了；你想清楚了吗：你的 kill criteria 是'20个 ideas'，但真正的死亡信号应该是'有没有人在用这个 tracker
+      而不是你自己'？Build-in-public 的叙事张力是真实的，但那是你作为 builder 的
+      audience，不是产品的用户，这两件事混在一起会让你误判 traction。
+    generated_at: '2026-05-10T21:13:24.086Z'
     model: claude-sonnet-4-6
   - persona: jensen-huang
     mentor_version: v2-distilled
-    score: 5
+    score: 3
     reasoning: >-
-      The narrative instinct here is genuinely interesting — Jensen might note
-      that turning the journey itself into the content, and the
-      panel-of-simulacra as the differentiator, shows real product thinking
-      about distribution as a layer of the stack, not an afterthought. But he
-      would likely pause and ask the hard question: where in the stack do you
-      actually own something? Because right now this is Astro plus markdown plus
-      Claude API plus a prompt engineering pattern — and if Anthropic changes a
-      pricing tier, or OpenAI ships a 'simulate any investor' feature inside
-      ChatGPT, the moat you think you have evaporates overnight. The
-      computational problem is fully CPU-shaped — this is content rendering and
-      API calls, not a workload that needs heroic compute — and he'd gently
-      observe that the persona-forge pipeline, however elegant, is workflow
-      orchestration around somebody else's model, which is renting your core
-      value from a landlord who does not love you. He might say with a slight
-      smile: 'The suffering here is the right kind — one-day ship, kill criteria
-      written in advance, that's honest — but the question is whether the 99
-      apps that follow compound into something that owns a layer, or whether
-      they are 99 experiments that each individually rent their moat, and the
-      lesson you learn on Day 100 is that you built a beautiful diary of other
-      people's infrastructure.'
-    generated_at: '2026-05-10T03:56:01.241Z'
+      我看了这个 idea，说实话，你把 meta 叙事和工具价值「合一」这件事——我理解那个冲动，但你解决的根本不是一个 GPU
+      问题，甚至不是一个真实的工程问题，你在解决的是「我怎么让自己显得在做事」的问题。你拥有的栈是什么？Astro 加 markdown 加 Claude
+      API——这三层你一层都不拥有，你在租别人的地基盖自己的展示柜，一次 API 定价调整就能让你的「差异化」消失。我最担心的是：你把
+      build-in-public 的叙事张力当成了护城河——那不是护城河，那是营销；真正的护城河是你在 persona distillation
+      这个方向上能不能做出别人复制不了的东西，而不是把 6 个名字摆进 panel 就叫「蒸馏」。你想清楚了吗——这 100
+      天结束之后，你手里会有什么是属于你的？
+    generated_at: '2026-05-10T21:13:24.808Z'
     model: claude-sonnet-4-6
 ---
 

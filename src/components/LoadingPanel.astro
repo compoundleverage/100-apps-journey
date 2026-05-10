@@ -32,7 +32,7 @@ const {
   states = {},
   signed = {},
   caption,
-  title = "What the Investors Said",
+  title = "投资人怎么说",
 } = Astro.props;
 
 const allMentors = await getCollection("mentors");
@@ -43,12 +43,12 @@ const mentors = (
 ).sort((a, b) => a.data.sort_order - b.data.sort_order);
 
 const stateLabels: Record<LoadingState, string> = {
-  queued: "awaiting brief",
-  reading: "reading the file",
-  consulting: "consulting the record",
-  composing: "composing the note",
-  signed: "signed",
-  failed: "could not reach",
+  queued: "等待派单",
+  reading: "正在阅读",
+  consulting: "查阅档案",
+  composing: "起草批注",
+  signed: "已落款",
+  failed: "联络失败",
 };
 
 const stateProgress: Record<LoadingState, number> = {
@@ -96,29 +96,22 @@ const avg =
 ---
 
 <section class="space-y-6">
-  <header class="flex items-end justify-between gap-4 border-b border-rule pb-3">
-    <div>
-      <p
-        class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
-      >
-        {
-          caption ??
-            (signedCount === total
-              ? `The Panel · ${total} Voices · Signed`
-              : `The Panel · ${signedCount}/${total} signed${failedCount > 0 ? ` · ${failedCount} unreachable` : ""}`)
-        }
-      </p>
-      <h2
-        class="font-display text-2xl sm:text-3xl font-medium tracking-tight text-ink"
-      >
-        {title}
-      </h2>
-    </div>
+  <header class="border-b border-rule pb-3">
     <p
-      class="hidden sm:block font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft text-right"
+      class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
     >
-      AI Simulation<br />Not Actual Statements
+      {
+        caption ??
+          (signedCount === total
+            ? `评审团 · ${total} 位 · 全部落款`
+            : `评审团 · ${signedCount}/${total} 已落款${failedCount > 0 ? ` · ${failedCount} 位联络失败` : ""}`)
+      }
     </p>
+    <h2
+      class="font-display text-2xl sm:text-3xl font-medium tracking-tight text-ink"
+    >
+      {title}
+    </h2>
   </header>
 
   <div
@@ -144,31 +137,25 @@ const avg =
               style={`background: ${accent}; opacity: ${state === "queued" ? "0.25" : "1"}; transition: opacity 600ms cubic-bezier(0.2, 0.7, 0.2, 1);`}
             />
 
-            <p class="font-mono text-[8.5px] uppercase tracking-[0.2em] text-ink-soft mb-5 flex items-center gap-1.5">
-              <span
-                class="inline-block w-1 h-1 rounded-full"
-                style={`background: ${accent}; opacity: ${state === "queued" ? "0.3" : "1"};`}
-              />
-              AI Sim · {mentor.id}
-              <span
-                class="ml-auto leading-none"
-                style={`color: ${accent}; opacity: ${state === "queued" ? "0.35" : "1"}; transition: opacity 600ms;`}
-              >
-                {stateGlyph[state]}
-              </span>
-            </p>
-
-            <div class="flex items-start gap-3 mb-3">
+            <div class="flex items-start gap-3 mb-3 mt-1">
               <span
                 class="flex items-center justify-center w-9 h-9 rounded-full font-mono text-[11px] font-medium shrink-0 mt-0.5"
                 style={`background-color: color-mix(in oklch, ${accent} 12%, transparent); color: ${accent}; opacity: ${state === "queued" ? "0.4" : "1"}; transition: opacity 600ms;`}
               >
                 {m.avatar_initials}
               </span>
-              <div class="min-w-0">
-                <p class="font-display font-semibold text-ink leading-tight">
-                  {m.name}
-                </p>
+              <div class="min-w-0 flex-1">
+                <div class="flex items-baseline gap-2">
+                  <p class="font-display font-semibold text-ink leading-tight">
+                    {m.name}
+                  </p>
+                  <span
+                    class="text-[11px] leading-none"
+                    style={`color: ${accent}; opacity: ${state === "queued" ? "0.35" : "1"}; transition: opacity 600ms;`}
+                  >
+                    {stateGlyph[state]}
+                  </span>
+                </div>
                 <p class="font-body italic text-[12.5px] text-ink-soft leading-snug mt-0.5">
                   {m.short_bio}
                 </p>
@@ -196,7 +183,7 @@ const avg =
                     / 10
                   </span>
                 </div>
-                <p class="font-body italic text-[13.5px] leading-[1.55] text-ink relative pl-3 border-l border-rule">
+                <p class="font-body text-[13.5px] leading-[1.7] text-ink relative pl-3 border-l border-rule">
                   {result.reasoning}
                 </p>
               </>
@@ -209,13 +196,13 @@ const avg =
                     —
                   </span>
                 </div>
-                <p class="font-body italic text-[13px] leading-[1.55] text-ink-soft pl-3 border-l border-rule">
-                  Could not reach {m.name}.
+                <p class="font-body text-[13px] leading-[1.6] text-ink-soft pl-3 border-l border-rule">
+                  联络 {m.name} 失败。
                   <a
                     href="#"
-                    class="ml-1 not-italic font-mono text-[10px] uppercase tracking-[0.15em] text-seal hover:text-ink transition-colors"
+                    class="ml-1 font-mono text-[10px] uppercase tracking-[0.15em] text-seal hover:text-ink transition-colors"
                   >
-                    Retry →
+                    重试 →
                   </a>
                 </p>
               </>
@@ -241,19 +228,19 @@ const avg =
   </div>
 
   <div class="flex items-baseline gap-3 flex-wrap pt-2">
-    <p class="font-body italic text-xs text-ink-soft max-w-2xl leading-relaxed">
-      Each card is an AI simulation, generated by prompting Claude to reason in the named individual's voice from public writings and talks. None of these are actual statements.
+    <p class="font-body text-xs text-ink-soft max-w-2xl leading-relaxed">
+      每张卡都是 AI 模拟，用 Claude 以这个人的口吻 prompt 生成，依据是他们公开的写作、谈话和思考方式。请勿当作本人的真实表态。
     </p>
     {
       avg !== null && (
         <p
           class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft ml-auto whitespace-nowrap"
-          title={`Average across ${signedScores.length} signed evaluations`}
+          title={`基于 ${signedScores.length} 位已落款评审的均分`}
         >
-          Avg <span class="font-display text-base text-ink tabular-nums">{avg}</span>
+          均分 <span class="font-display text-base text-ink tabular-nums">{avg}</span>
           {" "}/ 10
           {failedCount > 0 && (
-            <span class="text-ink-soft normal-case italic"> ({signedScores.length} of {total})</span>
+            <span class="text-ink-soft normal-case italic"> ({signedScores.length} / {total})</span>
           )}
         </p>
       )
@@ -261,7 +248,7 @@ const avg =
     {
       avg === null && inProgress > 0 && (
         <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft ml-auto whitespace-nowrap">
-          {inProgress} in flight
+          {inProgress} 位评审中
         </p>
       )
     }

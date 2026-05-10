@@ -33,7 +33,7 @@ const target = 100;
 const today = new Date().toISOString().slice(0, 10);
 ---
 
-<Layout title="The Pipeline · 100 Apps Journey">
+<Layout title="实验池 · 100 Apps Journey">
   <section class="border-b border-rule">
     <div
       class="max-w-6xl mx-auto px-6 sm:px-10 pt-12 sm:pt-20 pb-12 sm:pb-16"
@@ -43,7 +43,7 @@ const today = new Date().toISOString().slice(0, 10);
         <p
           class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
         >
-          The Pipeline · Issue 001
+          实验池 · 第 001 期
         </p>
       </div>
 
@@ -51,17 +51,17 @@ const today = new Date().toISOString().slice(0, 10);
         class="font-display text-[2.5rem] sm:text-[4rem] lg:text-[5rem] font-medium tracking-[-0.02em] leading-[0.92] mb-8 max-w-4xl entry-rise"
         style="animation-delay: 0.05s"
       >
-        100 attempts.<br />
-        <span class="italic font-light text-ink-soft">100 days.</span><br />
-        1 portfolio.
+        100 次尝试。<br />
+        <span class="italic font-light text-ink-soft">100 天。</span><br />
+        一份 portfolio。
       </h2>
 
       <p
-        class="font-body italic text-lg sm:text-xl text-ink-soft max-w-2xl leading-snug entry-rise"
+        class="font-body text-lg sm:text-xl text-ink-soft max-w-2xl leading-snug entry-rise"
         style="animation-delay: 0.1s"
       >
-        A public ledger of small experiments — each evaluated by an AI panel of
-        five investors with strong personalities and stronger opinions.
+        公开的小实验日志——每个 idea 由 AI 模拟的几位真人投资人评分。
+        偏好鲜明，分歧更鲜明。
       </p>
     </div>
   </section>
@@ -74,7 +74,7 @@ const today = new Date().toISOString().slice(0, 10);
         <p
           class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft"
         >
-          Standing as of {today}
+          截至 {today}
         </p>
         <div class="h-px flex-1 min-w-12 bg-rule"></div>
       </div>
@@ -86,7 +86,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            Logged
+            已记录
           </dt>
           <dd class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none">
             {stats.total}<span class="text-ink-soft text-base">/{target}</span>
@@ -96,7 +96,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            Idea
+            想法
           </dt>
           <dd
             class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
@@ -109,7 +109,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            Building
+            在做
           </dt>
           <dd
             class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
@@ -122,7 +122,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            Shipped
+            已上线
           </dt>
           <dd
             class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
@@ -135,7 +135,7 @@ const today = new Date().toISOString().slice(0, 10);
           <dt
             class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
           >
-            Killed
+            已撤
           </dt>
           <dd
             class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
@@ -152,9 +152,9 @@ const today = new Date().toISOString().slice(0, 10);
     {
       sorted.length === 0 ? (
         <div class="max-w-3xl mx-auto px-6 sm:px-10 py-24 text-center">
-          <p class="font-display text-2xl text-ink mb-3">No ideas yet.</p>
+          <p class="font-display text-2xl text-ink mb-3">还没有 idea。</p>
           <p class="font-body italic text-ink-soft">
-            The journey begins with the first ledger entry.
+            旅程从第一篇日志开始。
           </p>
         </div>
       ) : (

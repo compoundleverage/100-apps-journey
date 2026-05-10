@@ -20,10 +20,11 @@
   --color-idea: oklch(55% 0.01 280);
   --color-killed: oklch(45% 0.18 25);
 
-  /* Typography. */
-  --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
-  --font-body: "Spectral", "Source Serif 4", ui-serif, Georgia, serif;
-  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Menlo", monospace;
+  /* Typography. Latin first, then a CJK serif for Chinese characters.
+     font-synthesis: none (below) prevents fake-italic on CJK when italic is requested. */
+  --font-display: "Fraunces", "Noto Serif SC", "Source Han Serif SC", "Songti SC", ui-serif, Georgia, "Times New Roman", serif;
+  --font-body: "Spectral", "Noto Serif SC", "Source Han Serif SC", "Songti SC", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", "Noto Sans Mono CJK SC", "Sarasa Mono SC", ui-monospace, "SF Mono", "Menlo", monospace;
 }
 
 @layer base {
@@ -33,6 +34,9 @@
     background: var(--color-paper);
     -webkit-font-smoothing: antialiased;
     text-rendering: optimizeLegibility;
+    /* Don't algorithmically slant CJK glyphs when italic is requested —
+       Latin fonts (Spectral, Fraunces) still use their true italic faces. */
+    font-synthesis: none;
   }
 
   body {

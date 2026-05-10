@@ -40,7 +40,7 @@ const dateKilled = data.date_killed?.toISOString().slice(0, 10);
 
 const description = showsThesis
   ? data.thesis
-  : `Idea №${idStr} · in stealth until built or shipped.`;
+  : `Idea №${idStr} · 隐身中，动工或上线后公开。`;
 ---
 
 <Layout
@@ -57,7 +57,7 @@ const description = showsThesis
           <p
             class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
           >
-            Ledger Entry · №{idStr}
+            日志条目 · №{idStr}
           </p>
         </div>
 
@@ -74,12 +74,12 @@ const description = showsThesis
         >
           <StatusBadge status={data.status} />
           <span class="opacity-50">·</span>
-          <span>Added {dateAdded}</span>
+          <span>记录 {dateAdded}</span>
           {
             showsThesis && (
               <>
                 <span class="opacity-50">·</span>
-                <span>Budget {data.time_budget}</span>
+                <span>预算 {data.time_budget}</span>
               </>
             )
           }
@@ -87,7 +87,7 @@ const description = showsThesis
             dateShipped && (
               <>
                 <span class="opacity-50">·</span>
-                <span>Shipped {dateShipped}</span>
+                <span>上线 {dateShipped}</span>
               </>
             )
           }
@@ -95,7 +95,7 @@ const description = showsThesis
             dateKilled && (
               <>
                 <span class="opacity-50">·</span>
-                <span>Killed {dateKilled}</span>
+                <span>撤下 {dateKilled}</span>
               </>
             )
           }
@@ -111,7 +111,7 @@ const description = showsThesis
             !showsThesis && (
               <>
                 <span class="opacity-50">·</span>
-                <span class="italic">In stealth</span>
+                <span class="italic">隐身中</span>
               </>
             )
           }
@@ -128,7 +128,7 @@ const description = showsThesis
                 <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
                   Thesis
                 </p>
-                <p class="font-display text-[1.35rem] sm:text-[1.65rem] italic font-light leading-[1.35] text-ink max-w-2xl">
+                <p class="font-display text-[1.35rem] sm:text-[1.65rem] font-light leading-[1.55] text-ink max-w-2xl">
                   {data.thesis}
                 </p>
               </div>
@@ -136,7 +136,7 @@ const description = showsThesis
                 <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-2">
                   Kill Criteria
                 </p>
-                <p class="font-body italic text-[15px] text-ink-soft leading-relaxed">
+                <p class="font-body text-[15px] text-ink-soft leading-relaxed">
                   {data.kill_criteria}
                 </p>
               </div>
@@ -144,22 +144,22 @@ const description = showsThesis
             {showsPanel && avg !== null ? (
               <aside class="sm:text-right shrink-0 sm:min-w-[140px] sm:border-l border-rule sm:pl-8 sm:py-2">
                 <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2">
-                  Panel Average
+                  评审均分
                 </p>
                 <p class="font-display text-[5rem] sm:text-[6rem] font-medium leading-[0.85] text-seal tabular-nums">
                   {avg}
                 </p>
                 <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mt-2">
-                  / 10 · {data.investor_evaluations.length} voices
+                  / 10 · {data.investor_evaluations.length} 位
                 </p>
               </aside>
             ) : showsPanel ? (
               <aside class="sm:text-right shrink-0 sm:min-w-[140px] sm:border-l border-rule sm:pl-8 sm:py-2">
                 <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2">
-                  Panel
+                  评审
                 </p>
                 <p class="font-body italic text-sm text-ink-soft">
-                  Not yet convened.
+                  尚未集结。
                 </p>
               </aside>
             ) : null}
@@ -169,15 +169,13 @@ const description = showsThesis
         <section class="border-b border-rule">
           <div class="max-w-3xl mx-auto px-6 sm:px-10 py-16 text-center">
             <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-soft mb-4">
-              Sealed Entry
+              封存条目
             </p>
-            <p class="font-display text-2xl sm:text-3xl italic font-light text-ink-soft leading-snug max-w-xl mx-auto">
-              The thesis, kill criteria, and panel for this entry are withheld
-              until it is built or shipped.
+            <p class="font-display text-2xl sm:text-3xl font-light text-ink-soft leading-snug max-w-xl mx-auto">
+              这条目的 thesis、kill criteria 和评审在动工或上线前不公开。
             </p>
             <p class="font-body italic text-sm text-ink-soft mt-6 max-w-md mx-auto">
-              Progressive disclosure protects ideas in flight without removing
-              them from the public ledger.
+              渐进披露：保护进行中的 idea 不被预判，但仍登记在公开日志里。
             </p>
           </div>
         </section>
@@ -199,7 +197,7 @@ const description = showsThesis
         <section>
           <div class="max-w-3xl mx-auto px-6 sm:px-10 py-12 sm:py-16">
             <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-6">
-              The Entry
+              正文
             </p>
             <div class="prose-journal">
               <Content />
@@ -214,7 +212,7 @@ const description = showsThesis
                     target="_blank"
                     rel="noreferrer"
                   >
-                    ↗ Live
+                    ↗ 上线
                   </a>
                 )}
                 {data.repo && (
@@ -224,7 +222,7 @@ const description = showsThesis
                     target="_blank"
                     rel="noreferrer"
                   >
-                    ↗ Repository
+                    ↗ 代码库
                   </a>
                 )}
               </div>
@@ -242,12 +240,12 @@ const description = showsThesis
           href="/"
           class="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft hover:text-seal transition-colors"
         >
-          ← Back to the Pipeline
+          ← 回到实验池
         </a>
         <span
           class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hidden sm:inline"
         >
-          End of Entry №{idStr}
+          条目 №{idStr} · 完
         </span>
       </div>
     </nav>

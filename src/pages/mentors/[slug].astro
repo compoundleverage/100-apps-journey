@@ -21,12 +21,12 @@ const { Content } = await render(mentor);
 
 const versionGlyph = data.version === "v2-distilled" ? "●" : "◌";
 const versionLabel =
-  data.version === "v2-distilled" ? "Forged" : "Sketch · v1";
+  data.version === "v2-distilled" ? "完整态" : "草稿态 · v1";
 const researchDate = data.research_date.toISOString().slice(0, 10);
 ---
 
 <Layout
-  title={`${data.name} · The Panel · 100 Apps Journey`}
+  title={`${data.name} · 顾问团 · 100 Apps Journey`}
   description={data.epitaph}
 >
   <article>
@@ -44,7 +44,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             class="font-mono text-[10px] uppercase tracking-[0.3em]"
             style={`color: ${data.accent}`}
           >
-            On the Bench · {data.avatar_initials}
+            顾问 · {data.avatar_initials}
           </p>
         </div>
 
@@ -85,13 +85,14 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
 
         {
           data.version === "v1-bootstrap" && (
-            <p class="font-body italic text-sm text-ink-soft max-w-2xl mt-10 pl-6 border-l border-rule">
-              This mentor is in <strong class="not-italic font-display font-semibold">sketch form</strong> —
-              hand-distilled from public sources to seed the panel. Run{" "}
-              <span class="not-italic font-mono text-xs text-seal">
+            <p class="font-body text-sm text-ink-soft max-w-2xl mt-10 pl-6 border-l border-rule">
+              这位 mentor 目前是{" "}
+              <strong class="font-display font-semibold">草稿态</strong>——
+              从公开来源手工蒸馏的种子版。在 Claude Code 里跑{" "}
+              <span class="font-mono text-xs text-seal">
                 /persona-forge "{data.name}"
               </span>{" "}
-              in Claude Code to deepen with the full nuwa-skill methodology.
+              即可用完整的 nuwa-skill 方法论深化。
             </p>
           )
         }
@@ -104,7 +105,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
         <section class="border-b border-rule">
           <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
             <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-6">
-              Voiceprint · How you'd know it's them
+              声纹 · 一眼能认出他的样子
             </p>
             <ul class="space-y-3 max-w-2xl">
               {data.tells.map((tell) => (
@@ -131,11 +132,10 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
       <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-14">
         <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-3 mb-8">
           <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-            Mental models
+            心智模型
           </h2>
-          <p class="font-body italic text-sm sm:text-base text-ink-soft max-w-xl">
-            The lenses through which they see. Click to expand evidence and
-            limits.
+          <p class="font-body text-sm sm:text-base text-ink-soft max-w-xl">
+            他看世界的视角。点击展开 evidence 和 limits。
           </p>
         </div>
 
@@ -155,10 +155,10 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                     {model.name}
                   </span>
                   <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft shrink-0 group-open:hidden">
-                    ▸ expand
+                    ▸ 展开
                   </span>
                   <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft shrink-0 hidden group-open:inline">
-                    ▾ collapse
+                    ▾ 收起
                   </span>
                 </summary>
                 <div class="pl-9 mt-3 space-y-3 max-w-2xl">
@@ -168,7 +168,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                   {model.evidence.length > 0 && (
                     <div>
                       <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
-                        Evidence
+                        依据
                       </p>
                       <ul class="font-body italic text-sm text-ink-soft space-y-0.5">
                         {model.evidence.map((e) => (
@@ -180,7 +180,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                   {model.application && (
                     <div>
                       <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
-                        Application
+                        应用
                       </p>
                       <p class="font-body italic text-sm text-ink-soft">
                         {model.application}
@@ -190,7 +190,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                   {model.limits && (
                     <div>
                       <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
-                        Limits
+                        局限
                       </p>
                       <p class="font-body italic text-sm text-ink-soft">
                         {model.limits}
@@ -210,10 +210,10 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
       <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-14">
         <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-3 mb-8">
           <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
-            Decision heuristics
+            决策启发式
           </h2>
-          <p class="font-body italic text-sm sm:text-base text-ink-soft max-w-xl">
-            The fast rules they apply.
+          <p class="font-body text-sm sm:text-base text-ink-soft max-w-xl">
+            他做快判断时用的规则。
           </p>
         </div>
         <ol class="space-y-6 max-w-3xl">
@@ -229,14 +229,14 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
                   </p>
                   <p class="font-body italic text-sm text-ink-soft mt-2">
                     <span class="font-mono not-italic text-[9px] uppercase tracking-[0.2em] mr-1">
-                      When:
+                      适用：
                     </span>
                     {h.when}
                   </p>
                   {h.example && (
                     <p class="font-body italic text-sm text-ink-soft mt-1">
                       <span class="font-mono not-italic text-[9px] uppercase tracking-[0.2em] mr-1">
-                        e.g.:
+                        例：
                       </span>
                       {h.example}
                     </p>
@@ -254,12 +254,12 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
       <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-14 grid lg:grid-cols-2 gap-x-12 gap-y-10">
         <div>
           <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-6">
-            Expression DNA
+            表达 DNA
           </h2>
           <dl class="space-y-3 max-w-md">
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                Sentence style
+                句式
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.sentence_style}
@@ -267,7 +267,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                Vocabulary
+                词汇
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.vocabulary}
@@ -275,7 +275,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                Rhythm
+                节奏
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.rhythm}
@@ -283,7 +283,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                Humor
+                幽默
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.humor}
@@ -291,7 +291,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                Certainty
+                确定性
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.certainty}
@@ -299,7 +299,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             </div>
             <div>
               <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
-                Citation habits
+                引用习惯
               </dt>
               <dd class="font-body italic text-sm text-ink mt-0.5">
                 {data.expression_dna.citation_habits}
@@ -313,7 +313,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             data.values.length > 0 && (
               <div>
                 <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
-                  Values
+                  价值观
                 </h3>
                 <ul class="space-y-1.5 max-w-md">
                   {data.values.map((v) => (
@@ -331,7 +331,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             data.anti_patterns.length > 0 && (
               <div>
                 <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
-                  Anti-patterns
+                  反模式
                 </h3>
                 <ul class="space-y-1.5 max-w-md">
                   {data.anti_patterns.map((p) => (
@@ -349,7 +349,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
             data.tensions.length > 0 && (
               <div>
                 <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
-                  Internal tensions
+                  内在张力
                 </h3>
                 <ul class="space-y-2 max-w-md">
                   {data.tensions.map((t) => (
@@ -371,10 +371,10 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
         <section class="border-b border-rule">
           <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
             <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-3">
-              Honest boundaries
+              诚实边界
             </h2>
-            <p class="font-body italic text-sm text-ink-soft mb-6 max-w-xl">
-              What this distillation cannot do.
+            <p class="font-body text-sm text-ink-soft mb-6 max-w-xl">
+              这次蒸馏不能做什么。
             </p>
             <ul class="space-y-3 max-w-2xl">
               {data.boundaries.map((b) => (
@@ -409,7 +409,7 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
           data.intellectual_lineage && (
             <div class="lg:col-span-2">
               <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
-                Intellectual lineage
+                智识谱系
               </h3>
               <p class="font-body italic text-sm text-ink leading-relaxed max-w-3xl">
                 {data.intellectual_lineage}
@@ -420,12 +420,12 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
 
         <div>
           <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-4">
-            Primary sources
+            一手来源
           </h3>
           {
             data.primary_sources.length === 0 ? (
               <p class="font-body italic text-sm text-ink-soft">
-                None catalogued yet.
+                暂未整理。
               </p>
             ) : (
               <ul class="space-y-2 max-w-md">
@@ -457,11 +457,11 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
 
         <div>
           <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-4">
-            Secondary sources
+            二手参考
           </h3>
           {
             data.secondary_sources.length === 0 ? (
-              <p class="font-body italic text-sm text-ink-soft">—</p>
+              <p class="font-body italic text-sm text-ink-soft">暂未整理。</p>
             ) : (
               <ul class="space-y-2 max-w-md">
                 {data.secondary_sources.map((s) => (
@@ -496,10 +496,10 @@ const researchDate = data.research_date.toISOString().slice(0, 10);
           href="/mentors"
           class="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft hover:text-seal transition-colors"
         >
-          ← The bench
+          ← 顾问团
         </a>
         <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
-          {versionLabel} · researched {researchDate}
+          {versionLabel} · 调研于 {researchDate}
         </span>
       </div>
     </section>

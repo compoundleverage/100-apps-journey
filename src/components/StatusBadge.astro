@@ -12,10 +12,10 @@ const config: Record<
   Status,
   { label: string; mark: string; color: string }
 > = {
-  idea: { label: "Idea", mark: "◌", color: "var(--color-idea)" },
-  building: { label: "Building", mark: "◐", color: "var(--color-building)" },
-  shipped: { label: "Shipped", mark: "●", color: "var(--color-shipped)" },
-  killed: { label: "Killed", mark: "✕", color: "var(--color-killed)" },
+  idea: { label: "想法", mark: "◌", color: "var(--color-idea)" },
+  building: { label: "在做", mark: "◐", color: "var(--color-building)" },
+  shipped: { label: "已上线", mark: "●", color: "var(--color-shipped)" },
+  killed: { label: "已撤", mark: "✕", color: "var(--color-killed)" },
 };
 
 const { label, mark, color } = config[status];
