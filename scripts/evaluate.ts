@@ -214,7 +214,7 @@ async function evaluateOne(
 ): Promise<Evaluation> {
   const response = await client.messages.create({
     model,
-    max_tokens: 500,
+    max_tokens: 800,
     // System prompt is the lion's share of input tokens (mentor SKILL ~600-1000 words).
     // Cache it as an ephemeral breakpoint — reuses across calls in the same eval run
     // and across eval runs within ~5 minutes.

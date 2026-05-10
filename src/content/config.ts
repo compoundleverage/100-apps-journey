@@ -30,7 +30,7 @@ const sourceRef = z.object({
   title: z.string(),
   url: z.string().url().optional(),
   type: z
-    .enum(["book", "essay", "talk", "interview", "tweet", "video", "site", "other"])
+    .enum(["book", "essay", "talk", "interview", "podcast", "tweet", "video", "site", "other"])
     .optional(),
   note: z.string().optional(),
 });
