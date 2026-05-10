@@ -1,0 +1,152 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+const mentorEntries = await getCollection("mentors");
+const PANEL = mentorEntries
+  .map((m) => ({
+    id: m.id,
+    name: m.data.name,
+    avatar_initials: m.data.avatar_initials,
+    accent: m.data.accent,
+    short_bio: m.data.short_bio,
+    style_notes: m.data.tells.slice(0, 2).join(" · ") || m.data.short_bio,
+    sort_order: m.data.sort_order,
+  }))
+  .sort((a, b) => a.sort_order - b.sort_order);
+---
+
+<Layout title="Methodology · 100 Apps Journey">
+  <article>
+    <header class="border-b border-rule">
+      <div class="max-w-3xl mx-auto px-6 sm:px-10 pt-12 sm:pt-20 pb-10">
+        <div class="flex items-center gap-3 mb-5 entry-rise">
+          <span class="block w-6 h-px bg-seal"></span>
+          <p
+            class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
+          >
+            Methodology
+          </p>
+        </div>
+        <h1
+          class="font-display text-[2.5rem] sm:text-[3.5rem] font-medium tracking-[-0.02em] leading-[0.95] entry-rise"
+          style="animation-delay: 0.05s"
+        >
+          Why 100 apps<br />in 100 days.
+        </h1>
+      </div>
+    </header>
+
+    <section>
+      <div class="max-w-3xl mx-auto px-6 sm:px-10 py-12 sm:py-16">
+        <div class="prose-journal">
+          <p>
+            AI has compressed the cost of building a working prototype from
+            weeks to hours. The constraint is no longer engineering — it is
+            <em>knowing what to build</em>. The most efficient way to find out
+            is to build, ship, observe, and decide.
+          </p>
+
+          <p>
+            This site is the public ledger of one such experiment: 100 small
+            app attempts in 100 days. Each attempt is treated like an angel
+            investment — a thesis, a kill criterion, a time budget. Most will
+            fail. A few will hint at something. The portfolio approach assumes
+            you don't know in advance which one is the outlier; you find out
+            by trying.
+          </p>
+
+          <h2>The Frame</h2>
+          <p>Every entry has four required fields, treated as the contract:</p>
+          <ul>
+            <li>
+              <strong>Thesis</strong> — why this could be valuable, in one or
+              two sentences.
+            </li>
+            <li>
+              <strong>Kill criteria</strong> — the conditions under which this
+              gets retired without sentiment.
+            </li>
+            <li>
+              <strong>Time budget</strong> — the cap on investment before
+              re-evaluation.
+            </li>
+            <li>
+              <strong>Tags</strong> — domain markers for later
+              pattern-finding.
+            </li>
+          </ul>
+        </div>
+
+        <hr class="my-12 border-rule" />
+
+        <div class="prose-journal">
+          <h2>The Panel</h2>
+          <p>
+            Every idea is evaluated by an AI-simulated panel of five real
+            investors and builders. Each is prompted to reason as themselves —
+            drawing from their public writings, talks, and tweets — without
+            artificial division of labor. They overlap, disagree, and bring
+            their full perspective.
+          </p>
+        </div>
+
+        <ul class="mt-6 grid gap-3">
+          {
+            PANEL.map((p) => (
+              <li class="grid grid-cols-[auto_1fr] gap-4 items-start py-3 border-t border-rule first:border-t-0">
+                <span
+                  class="flex items-center justify-center w-9 h-9 rounded-full font-mono text-[11px] font-medium shrink-0"
+                  style={`background-color: color-mix(in oklch, ${p.accent} 12%, transparent); color: ${p.accent};`}
+                >
+                  {p.avatar_initials}
+                </span>
+                <div>
+                  <p class="font-display font-semibold text-ink leading-tight">
+                    {p.name}
+                  </p>
+                  <p class="font-body italic text-sm text-ink-soft mt-1 leading-snug">
+                    {p.short_bio}
+                  </p>
+                  <p class="font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft mt-1.5">
+                    {p.style_notes}
+                  </p>
+                </div>
+              </li>
+            ))
+          }
+        </ul>
+
+        <p class="mt-6 font-body italic text-xs text-ink-soft leading-relaxed">
+          Evaluations are AI-generated simulations, not actual statements or
+          endorsements of these individuals.
+        </p>
+
+        <hr class="my-12 border-rule" />
+
+        <div class="prose-journal">
+          <h2>The Promise</h2>
+          <p>
+            Most experiments are throwaway. That is the point. The compounding
+            asset is not any single app — it is the <em>discipline</em> of
+            writing thesis, kill criteria, and time budget for everything; of
+            not falling in love with ideas; of letting the panel disagree
+            productively. By day 100, the portfolio speaks for itself.
+          </p>
+          <p>
+            And by day 200, two or three of the experiments will have outgrown
+            the ledger and become real products. That is the bet.
+          </p>
+        </div>
+
+        <div
+          class="mt-16 pt-6 border-t border-rule font-mono text-xs uppercase tracking-[0.2em] text-ink-soft"
+        >
+          <a href="/" class="hover:text-seal transition-colors">
+            ← Back to the Pipeline
+          </a>
+        </div>
+      </div>
+    </section>
+  </article>
+</Layout>

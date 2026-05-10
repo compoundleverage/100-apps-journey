@@ -1,0 +1,169 @@
+---
+import Layout from "../layouts/Layout.astro";
+import IdeaCard from "../components/IdeaCard.astro";
+import { getCollection } from "astro:content";
+
+const ideas = await getCollection("ideas");
+
+// Sort: building first, then idea, then shipped, then killed.
+// Within each, newest date_added first.
+const STATUS_ORDER: Record<string, number> = {
+  building: 0,
+  idea: 1,
+  shipped: 2,
+  killed: 3,
+};
+
+const sorted = [...ideas].sort((a, b) => {
+  const sa = STATUS_ORDER[a.data.status] ?? 99;
+  const sb = STATUS_ORDER[b.data.status] ?? 99;
+  if (sa !== sb) return sa - sb;
+  return b.data.date_added.getTime() - a.data.date_added.getTime();
+});
+
+const stats = {
+  total: ideas.length,
+  idea: ideas.filter((i) => i.data.status === "idea").length,
+  building: ideas.filter((i) => i.data.status === "building").length,
+  shipped: ideas.filter((i) => i.data.status === "shipped").length,
+  killed: ideas.filter((i) => i.data.status === "killed").length,
+};
+
+const target = 100;
+const today = new Date().toISOString().slice(0, 10);
+---
+
+<Layout title="The Pipeline · 100 Apps Journey">
+  <section class="border-b border-rule">
+    <div
+      class="max-w-6xl mx-auto px-6 sm:px-10 pt-12 sm:pt-20 pb-12 sm:pb-16"
+    >
+      <div class="flex items-center gap-3 mb-6 entry-rise">
+        <span class="block w-8 h-px bg-seal"></span>
+        <p
+          class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
+        >
+          The Pipeline · Issue 001
+        </p>
+      </div>
+
+      <h2
+        class="font-display text-[2.5rem] sm:text-[4rem] lg:text-[5rem] font-medium tracking-[-0.02em] leading-[0.92] mb-8 max-w-4xl entry-rise"
+        style="animation-delay: 0.05s"
+      >
+        100 attempts.<br />
+        <span class="italic font-light text-ink-soft">100 days.</span><br />
+        1 portfolio.
+      </h2>
+
+      <p
+        class="font-body italic text-lg sm:text-xl text-ink-soft max-w-2xl leading-snug entry-rise"
+        style="animation-delay: 0.1s"
+      >
+        A public ledger of small experiments — each evaluated by an AI panel of
+        five investors with strong personalities and stronger opinions.
+      </p>
+    </div>
+  </section>
+
+  <section class="border-b border-rule bg-paper">
+    <div class="max-w-6xl mx-auto px-6 sm:px-10 py-6 sm:py-7">
+      <div
+        class="flex flex-wrap items-baseline gap-x-4 sm:gap-x-8 gap-y-3 mb-5"
+      >
+        <p
+          class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft"
+        >
+          Standing as of {today}
+        </p>
+        <div class="h-px flex-1 min-w-12 bg-rule"></div>
+      </div>
+
+      <dl
+        class="grid grid-cols-2 sm:grid-cols-5 gap-y-5 gap-x-4"
+      >
+        <div>
+          <dt
+            class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
+          >
+            Logged
+          </dt>
+          <dd class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none">
+            {stats.total}<span class="text-ink-soft text-base">/{target}</span>
+          </dd>
+        </div>
+        <div>
+          <dt
+            class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
+          >
+            Idea
+          </dt>
+          <dd
+            class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
+            style="color: var(--color-idea)"
+          >
+            {stats.idea}
+          </dd>
+        </div>
+        <div>
+          <dt
+            class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
+          >
+            Building
+          </dt>
+          <dd
+            class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
+            style="color: var(--color-building)"
+          >
+            {stats.building}
+          </dd>
+        </div>
+        <div>
+          <dt
+            class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
+          >
+            Shipped
+          </dt>
+          <dd
+            class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
+            style="color: var(--color-shipped)"
+          >
+            {stats.shipped}
+          </dd>
+        </div>
+        <div>
+          <dt
+            class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1"
+          >
+            Killed
+          </dt>
+          <dd
+            class="font-display text-3xl sm:text-4xl font-medium tabular-nums leading-none"
+            style="color: var(--color-killed)"
+          >
+            {stats.killed}
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </section>
+
+  <section>
+    {
+      sorted.length === 0 ? (
+        <div class="max-w-3xl mx-auto px-6 sm:px-10 py-24 text-center">
+          <p class="font-display text-2xl text-ink mb-3">No ideas yet.</p>
+          <p class="font-body italic text-ink-soft">
+            The journey begins with the first ledger entry.
+          </p>
+        </div>
+      ) : (
+        <div>
+          {sorted.map((idea) => (
+            <IdeaCard idea={idea} />
+          ))}
+        </div>
+      )
+    }
+  </section>
+</Layout>

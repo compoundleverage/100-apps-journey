@@ -1,0 +1,223 @@
+@import "tailwindcss";
+
+@theme {
+  /* Paper: warm cream, slightly off-white. Like newsprint left in a drawer. */
+  --color-paper: oklch(96.5% 0.012 80);
+  --color-paper-soft: oklch(94% 0.014 80);
+  --color-rule: oklch(85% 0.012 80);
+
+  /* Ink: deep slate-black, never pure black. */
+  --color-ink: oklch(20% 0.012 280);
+  --color-ink-soft: oklch(50% 0.012 280);
+
+  /* Brand: a single deep crimson — "stamp red" / private seal. */
+  --color-seal: oklch(42% 0.18 25);
+  --color-seal-soft: oklch(55% 0.14 25);
+
+  /* Status colors — used sparingly. */
+  --color-shipped: oklch(50% 0.16 155);
+  --color-building: oklch(60% 0.16 75);
+  --color-idea: oklch(55% 0.01 280);
+  --color-killed: oklch(45% 0.18 25);
+
+  /* Typography. */
+  --font-display: "Fraunces", ui-serif, Georgia, "Times New Roman", serif;
+  --font-body: "Spectral", "Source Serif 4", ui-serif, Georgia, serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", "Menlo", monospace;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-body);
+    color: var(--color-ink);
+    background: var(--color-paper);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    font-feature-settings: "kern", "liga", "calt", "ss01";
+  }
+
+  ::selection {
+    background: var(--color-seal);
+    color: var(--color-paper);
+  }
+
+  h1, h2, h3, h4, h5 {
+    font-family: var(--font-display);
+    font-feature-settings: "ss01";
+  }
+
+  /* Focus rings — keep ink-toned, not blue. */
+  :focus-visible {
+    outline: 2px solid var(--color-seal);
+    outline-offset: 2px;
+  }
+}
+
+/* Markdown body styling — used inside .prose-journal wrapper */
+.prose-journal {
+  font-family: var(--font-body);
+  font-size: 1.0625rem;
+  line-height: 1.75;
+  color: var(--color-ink);
+  max-width: 65ch;
+}
+
+.prose-journal > * + * {
+  margin-top: 1.25rem;
+}
+
+.prose-journal h1 {
+  font-family: var(--font-display);
+  font-size: 2rem;
+  font-weight: 600;
+  letter-spacing: -0.015em;
+  margin-top: 2.5rem;
+  margin-bottom: 0.75rem;
+  line-height: 1.1;
+}
+
+.prose-journal h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin-top: 2.5rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.2;
+}
+
+.prose-journal h3 {
+  font-family: var(--font-display);
+  font-size: 1.2rem;
+  font-weight: 500;
+  margin-top: 2rem;
+  margin-bottom: 0.5rem;
+  line-height: 1.25;
+}
+
+.prose-journal p {
+  margin-bottom: 1.1rem;
+}
+
+.prose-journal em {
+  font-style: italic;
+}
+
+.prose-journal strong {
+  font-weight: 600;
+  color: var(--color-ink);
+}
+
+.prose-journal ul,
+.prose-journal ol {
+  padding-left: 1.5rem;
+  margin-bottom: 1.25rem;
+}
+
+.prose-journal ul {
+  list-style: none;
+}
+
+.prose-journal ul > li {
+  position: relative;
+  padding-left: 1.25rem;
+  margin-bottom: 0.45rem;
+}
+
+.prose-journal ul > li::before {
+  content: "—";
+  position: absolute;
+  left: 0;
+  color: var(--color-ink-soft);
+  font-family: var(--font-mono);
+}
+
+.prose-journal ol {
+  list-style: decimal;
+}
+
+.prose-journal ol > li {
+  margin-bottom: 0.45rem;
+  padding-left: 0.5rem;
+}
+
+.prose-journal a {
+  color: var(--color-seal);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: color 200ms;
+}
+
+.prose-journal a:hover {
+  color: var(--color-ink);
+}
+
+.prose-journal code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--color-paper-soft);
+  padding: 0.1em 0.4em;
+  border-radius: 2px;
+  color: var(--color-ink);
+}
+
+.prose-journal pre {
+  font-family: var(--font-mono);
+  background: var(--color-paper-soft);
+  border-left: 3px solid var(--color-rule);
+  padding: 1rem 1.25rem;
+  overflow-x: auto;
+  font-size: 0.875rem;
+  line-height: 1.6;
+  margin: 1.5rem 0;
+}
+
+.prose-journal pre code {
+  background: transparent;
+  padding: 0;
+}
+
+.prose-journal blockquote {
+  border-left: 3px solid var(--color-seal);
+  padding-left: 1.25rem;
+  font-style: italic;
+  color: var(--color-ink-soft);
+  margin: 1.5rem 0;
+}
+
+.prose-journal hr {
+  border: none;
+  border-top: 1px solid var(--color-rule);
+  margin: 2.5rem 0;
+}
+
+/* Entry animations — gentle, journal-like */
+@keyframes journal-rise {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.entry-rise {
+  animation: journal-rise 0.7s cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .entry-rise {
+    animation: none;
+  }
+}
+
+/* Tabular numerals across the site, since we love numbers */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}

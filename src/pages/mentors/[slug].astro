@@ -1,0 +1,507 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const mentorEntries = await getCollection("mentors");
+  return mentorEntries.map((mentor) => ({
+    params: { slug: mentor.id },
+    props: { mentor },
+  }));
+}
+
+interface Props {
+  mentor: CollectionEntry<"mentors">;
+}
+
+const { mentor } = Astro.props;
+const data = mentor.data;
+const { Content } = await render(mentor);
+
+const versionGlyph = data.version === "v2-distilled" ? "●" : "◌";
+const versionLabel =
+  data.version === "v2-distilled" ? "Forged" : "Sketch · v1";
+const researchDate = data.research_date.toISOString().slice(0, 10);
+---
+
+<Layout
+  title={`${data.name} · The Panel · 100 Apps Journey`}
+  description={data.epitaph}
+>
+  <article>
+    <!-- Above-the-fold: name, epitaph, version glyph, accent rule, pull quote -->
+    <header class="border-b border-rule">
+      <div
+        class="max-w-4xl mx-auto px-6 sm:px-10 pt-12 sm:pt-20 pb-12 sm:pb-16"
+      >
+        <div class="flex items-center gap-3 mb-5 entry-rise">
+          <span
+            class="block w-6 h-px"
+            style={`background: ${data.accent}`}
+          ></span>
+          <p
+            class="font-mono text-[10px] uppercase tracking-[0.3em]"
+            style={`color: ${data.accent}`}
+          >
+            On the Bench · {data.avatar_initials}
+          </p>
+        </div>
+
+        <div class="flex items-baseline gap-3 mb-3 flex-wrap entry-rise"
+             style="animation-delay: 0.05s">
+          <h1
+            class="font-display text-[2.25rem] sm:text-5xl lg:text-[3.5rem] font-medium tracking-[-0.018em] leading-[0.98] text-ink"
+          >
+            {data.name}
+          </h1>
+          <span
+            class="font-display text-3xl sm:text-4xl leading-none"
+            style={`color: ${data.accent}`}
+            title={data.version}
+          >
+            {versionGlyph}
+          </span>
+        </div>
+
+        <p class="font-body italic text-base sm:text-lg text-ink-soft mb-10 leading-snug entry-rise"
+           style="animation-delay: 0.1s">
+          {data.short_bio}
+        </p>
+
+        <blockquote
+          class="font-display italic font-light text-[1.5rem] sm:text-[2rem] leading-[1.25] text-ink max-w-3xl border-l-2 pl-6 entry-rise"
+          style={`border-color: ${data.accent}; animation-delay: 0.15s`}
+        >
+          "{data.epitaph}"
+          {
+            data.epitaph_source && (
+              <footer class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mt-3 not-italic">
+                — {data.epitaph_source}
+              </footer>
+            )
+          }
+        </blockquote>
+
+        {
+          data.version === "v1-bootstrap" && (
+            <p class="font-body italic text-sm text-ink-soft max-w-2xl mt-10 pl-6 border-l border-rule">
+              This mentor is in <strong class="not-italic font-display font-semibold">sketch form</strong> —
+              hand-distilled from public sources to seed the panel. Run{" "}
+              <span class="not-italic font-mono text-xs text-seal">
+                /persona-forge "{data.name}"
+              </span>{" "}
+              in Claude Code to deepen with the full nuwa-skill methodology.
+            </p>
+          )
+        }
+      </div>
+    </header>
+
+    <!-- Voiceprint: 3 expression-DNA tells -->
+    {
+      data.tells.length > 0 && (
+        <section class="border-b border-rule">
+          <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
+            <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-6">
+              Voiceprint · How you'd know it's them
+            </p>
+            <ul class="space-y-3 max-w-2xl">
+              {data.tells.map((tell) => (
+                <li class="flex items-baseline gap-3">
+                  <span
+                    class="font-mono text-[10px] uppercase tracking-[0.15em] tabular-nums shrink-0 mt-1"
+                    style={`color: ${data.accent}`}
+                  >
+                    ▸
+                  </span>
+                  <p class="font-body italic text-[15px] sm:text-base text-ink leading-snug">
+                    {tell}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Mental models — collapsed by default via <details> -->
+    <section class="border-b border-rule">
+      <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-14">
+        <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-3 mb-8">
+          <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
+            Mental models
+          </h2>
+          <p class="font-body italic text-sm sm:text-base text-ink-soft max-w-xl">
+            The lenses through which they see. Click to expand evidence and
+            limits.
+          </p>
+        </div>
+
+        <div class="space-y-px bg-rule">
+          {
+            data.mental_models.map((model, i) => (
+              <details
+                class="group bg-paper px-5 sm:px-6 py-4 [&_summary]:cursor-pointer"
+              >
+                <summary class="list-none flex items-baseline gap-4">
+                  <span
+                    class="font-mono text-[10px] tabular-nums uppercase tracking-[0.15em] text-ink-soft shrink-0"
+                  >
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <span class="font-display text-lg font-semibold text-ink leading-tight flex-1">
+                    {model.name}
+                  </span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft shrink-0 group-open:hidden">
+                    ▸ expand
+                  </span>
+                  <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft shrink-0 hidden group-open:inline">
+                    ▾ collapse
+                  </span>
+                </summary>
+                <div class="pl-9 mt-3 space-y-3 max-w-2xl">
+                  <p class="font-body text-[15px] leading-relaxed text-ink">
+                    {model.summary}
+                  </p>
+                  {model.evidence.length > 0 && (
+                    <div>
+                      <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
+                        Evidence
+                      </p>
+                      <ul class="font-body italic text-sm text-ink-soft space-y-0.5">
+                        {model.evidence.map((e) => (
+                          <li>— {e}</li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  {model.application && (
+                    <div>
+                      <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
+                        Application
+                      </p>
+                      <p class="font-body italic text-sm text-ink-soft">
+                        {model.application}
+                      </p>
+                    </div>
+                  )}
+                  {model.limits && (
+                    <div>
+                      <p class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft mb-1">
+                        Limits
+                      </p>
+                      <p class="font-body italic text-sm text-ink-soft">
+                        {model.limits}
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </details>
+            ))
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Decision heuristics -->
+    <section class="border-b border-rule">
+      <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-14">
+        <div class="grid sm:grid-cols-[auto_1fr] gap-x-10 gap-y-3 mb-8">
+          <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight">
+            Decision heuristics
+          </h2>
+          <p class="font-body italic text-sm sm:text-base text-ink-soft max-w-xl">
+            The fast rules they apply.
+          </p>
+        </div>
+        <ol class="space-y-6 max-w-3xl">
+          {
+            data.decision_heuristics.map((h, i) => (
+              <li class="grid grid-cols-[auto_1fr] gap-4 border-b border-rule pb-5 last:border-b-0">
+                <span class="font-mono text-[10px] uppercase tracking-[0.15em] tabular-nums text-ink-soft pt-1">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <div>
+                  <p class="font-display text-lg font-medium text-ink leading-snug">
+                    {h.rule}
+                  </p>
+                  <p class="font-body italic text-sm text-ink-soft mt-2">
+                    <span class="font-mono not-italic text-[9px] uppercase tracking-[0.2em] mr-1">
+                      When:
+                    </span>
+                    {h.when}
+                  </p>
+                  {h.example && (
+                    <p class="font-body italic text-sm text-ink-soft mt-1">
+                      <span class="font-mono not-italic text-[9px] uppercase tracking-[0.2em] mr-1">
+                        e.g.:
+                      </span>
+                      {h.example}
+                    </p>
+                  )}
+                </div>
+              </li>
+            ))
+          }
+        </ol>
+      </div>
+    </section>
+
+    <!-- Expression DNA + Values + Anti-patterns + Tensions -->
+    <section class="border-b border-rule">
+      <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-14 grid lg:grid-cols-2 gap-x-12 gap-y-10">
+        <div>
+          <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-6">
+            Expression DNA
+          </h2>
+          <dl class="space-y-3 max-w-md">
+            <div>
+              <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
+                Sentence style
+              </dt>
+              <dd class="font-body italic text-sm text-ink mt-0.5">
+                {data.expression_dna.sentence_style}
+              </dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
+                Vocabulary
+              </dt>
+              <dd class="font-body italic text-sm text-ink mt-0.5">
+                {data.expression_dna.vocabulary}
+              </dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
+                Rhythm
+              </dt>
+              <dd class="font-body italic text-sm text-ink mt-0.5">
+                {data.expression_dna.rhythm}
+              </dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
+                Humor
+              </dt>
+              <dd class="font-body italic text-sm text-ink mt-0.5">
+                {data.expression_dna.humor}
+              </dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
+                Certainty
+              </dt>
+              <dd class="font-body italic text-sm text-ink mt-0.5">
+                {data.expression_dna.certainty}
+              </dd>
+            </div>
+            <div>
+              <dt class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
+                Citation habits
+              </dt>
+              <dd class="font-body italic text-sm text-ink mt-0.5">
+                {data.expression_dna.citation_habits}
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="space-y-8">
+          {
+            data.values.length > 0 && (
+              <div>
+                <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
+                  Values
+                </h3>
+                <ul class="space-y-1.5 max-w-md">
+                  {data.values.map((v) => (
+                    <li class="font-body text-sm text-ink leading-snug">
+                      <span class="text-ink-soft mr-1">—</span>
+                      {v}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+
+          {
+            data.anti_patterns.length > 0 && (
+              <div>
+                <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
+                  Anti-patterns
+                </h3>
+                <ul class="space-y-1.5 max-w-md">
+                  {data.anti_patterns.map((p) => (
+                    <li class="font-body text-sm text-ink-soft italic leading-snug">
+                      <span class="not-italic mr-1">✕</span>
+                      {p}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+
+          {
+            data.tensions.length > 0 && (
+              <div>
+                <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
+                  Internal tensions
+                </h3>
+                <ul class="space-y-2 max-w-md">
+                  {data.tensions.map((t) => (
+                    <li class="font-body italic text-sm text-ink leading-snug pl-3 border-l border-rule">
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Boundaries (honest limits) -->
+    {
+      data.boundaries.length > 0 && (
+        <section class="border-b border-rule">
+          <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
+            <h2 class="font-display text-xl sm:text-2xl font-medium tracking-tight mb-3">
+              Honest boundaries
+            </h2>
+            <p class="font-body italic text-sm text-ink-soft mb-6 max-w-xl">
+              What this distillation cannot do.
+            </p>
+            <ul class="space-y-3 max-w-2xl">
+              {data.boundaries.map((b) => (
+                <li class="flex items-baseline gap-3">
+                  <span class="font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft shrink-0 mt-1">
+                    ◌
+                  </span>
+                  <p class="font-body italic text-sm text-ink-soft leading-relaxed">
+                    {b}
+                  </p>
+                </li>
+              ))}
+            </ul>
+          </div>
+        </section>
+      )
+    }
+
+    <!-- Optional body content from SKILL.md -->
+    <section class="border-b border-rule">
+      <div class="max-w-3xl mx-auto px-6 sm:px-10 py-10 sm:py-12">
+        <div class="prose-journal">
+          <Content />
+        </div>
+      </div>
+    </section>
+
+    <!-- Sources + lineage -->
+    <section class="border-b border-rule">
+      <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-12 grid lg:grid-cols-2 gap-x-12 gap-y-8">
+        {
+          data.intellectual_lineage && (
+            <div class="lg:col-span-2">
+              <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
+                Intellectual lineage
+              </h3>
+              <p class="font-body italic text-sm text-ink leading-relaxed max-w-3xl">
+                {data.intellectual_lineage}
+              </p>
+            </div>
+          )
+        }
+
+        <div>
+          <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-4">
+            Primary sources
+          </h3>
+          {
+            data.primary_sources.length === 0 ? (
+              <p class="font-body italic text-sm text-ink-soft">
+                None catalogued yet.
+              </p>
+            ) : (
+              <ul class="space-y-2 max-w-md">
+                {data.primary_sources.map((s) => (
+                  <li class="font-body text-sm leading-snug">
+                    {s.url ? (
+                      <a
+                        href={s.url}
+                        class="text-seal hover:text-ink transition-colors"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        ↗ {s.title}
+                      </a>
+                    ) : (
+                      <span class="text-ink">{s.title}</span>
+                    )}
+                    {s.type && (
+                      <span class="font-mono text-[9px] uppercase tracking-[0.15em] text-ink-soft ml-2">
+                        {s.type}
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </div>
+
+        <div>
+          <h3 class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-4">
+            Secondary sources
+          </h3>
+          {
+            data.secondary_sources.length === 0 ? (
+              <p class="font-body italic text-sm text-ink-soft">—</p>
+            ) : (
+              <ul class="space-y-2 max-w-md">
+                {data.secondary_sources.map((s) => (
+                  <li class="font-body text-sm leading-snug">
+                    {s.url ? (
+                      <a
+                        href={s.url}
+                        class="text-ink-soft hover:text-seal transition-colors italic"
+                        target="_blank"
+                        rel="noreferrer"
+                      >
+                        {s.title}
+                      </a>
+                    ) : (
+                      <span class="italic text-ink-soft">{s.title}</span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )
+          }
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer meta -->
+    <section>
+      <div
+        class="max-w-4xl mx-auto px-6 sm:px-10 py-6 flex items-center justify-between flex-wrap gap-3"
+      >
+        <a
+          href="/mentors"
+          class="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft hover:text-seal transition-colors"
+        >
+          ← The bench
+        </a>
+        <span class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft">
+          {versionLabel} · researched {researchDate}
+        </span>
+      </div>
+    </section>
+  </article>
+</Layout>

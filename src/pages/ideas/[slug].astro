@@ -1,0 +1,255 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import StatusBadge from "../../components/StatusBadge.astro";
+import InvestorPanel from "../../components/InvestorPanel.astro";
+import { averageScore } from "../../lib/scoring";
+import {
+  effectiveDisclosure,
+  showThesis,
+  showBody,
+  showPanel,
+} from "../../lib/disclosure";
+import { getCollection, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+
+export async function getStaticPaths() {
+  const ideas = await getCollection("ideas");
+  return ideas.map((idea) => ({
+    params: { slug: idea.id },
+    props: { idea },
+  }));
+}
+
+interface Props {
+  idea: CollectionEntry<"ideas">;
+}
+
+const { idea } = Astro.props;
+const data = idea.data;
+const disclosure = effectiveDisclosure(data);
+const showsThesis = showThesis(disclosure);
+const showsBody = showBody(disclosure);
+const showsPanel = showPanel(disclosure);
+
+const { Content } = await render(idea);
+const avg = averageScore(data.investor_evaluations);
+const idStr = String(data.id).padStart(3, "0");
+const dateAdded = data.date_added.toISOString().slice(0, 10);
+const dateShipped = data.date_shipped?.toISOString().slice(0, 10);
+const dateKilled = data.date_killed?.toISOString().slice(0, 10);
+
+const description = showsThesis
+  ? data.thesis
+  : `Idea №${idStr} · in stealth until built or shipped.`;
+---
+
+<Layout
+  title={`${data.title} · 100 Apps Journey`}
+  description={description}
+>
+  <article>
+    <header class="border-b border-rule">
+      <div
+        class="max-w-4xl mx-auto px-6 sm:px-10 pt-10 sm:pt-16 pb-10 sm:pb-12"
+      >
+        <div class="flex items-center gap-3 mb-5 entry-rise">
+          <span class="block w-6 h-px bg-seal"></span>
+          <p
+            class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal"
+          >
+            Ledger Entry · №{idStr}
+          </p>
+        </div>
+
+        <h1
+          class="font-display text-[2.25rem] sm:text-5xl lg:text-[3.5rem] font-medium tracking-[-0.018em] leading-[0.98] text-ink max-w-3xl mb-6 entry-rise"
+          style="animation-delay: 0.05s"
+        >
+          {data.title}
+        </h1>
+
+        <div
+          class="flex items-center gap-x-3 gap-y-2 flex-wrap font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft entry-rise"
+          style="animation-delay: 0.1s"
+        >
+          <StatusBadge status={data.status} />
+          <span class="opacity-50">·</span>
+          <span>Added {dateAdded}</span>
+          {
+            showsThesis && (
+              <>
+                <span class="opacity-50">·</span>
+                <span>Budget {data.time_budget}</span>
+              </>
+            )
+          }
+          {
+            dateShipped && (
+              <>
+                <span class="opacity-50">·</span>
+                <span>Shipped {dateShipped}</span>
+              </>
+            )
+          }
+          {
+            dateKilled && (
+              <>
+                <span class="opacity-50">·</span>
+                <span>Killed {dateKilled}</span>
+              </>
+            )
+          }
+          {
+            showsThesis && data.tags.length > 0 && (
+              <>
+                <span class="opacity-50">·</span>
+                <span>{data.tags.join(" / ")}</span>
+              </>
+            )
+          }
+          {
+            !showsThesis && (
+              <>
+                <span class="opacity-50">·</span>
+                <span class="italic">In stealth</span>
+              </>
+            )
+          }
+        </div>
+      </div>
+    </header>
+
+    {
+      showsThesis ? (
+        <section class="border-b border-rule">
+          <div class="max-w-4xl mx-auto px-6 sm:px-10 py-10 sm:py-12 grid sm:grid-cols-[1fr_auto] gap-y-8 gap-x-10 items-start">
+            <div class="space-y-8">
+              <div>
+                <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
+                  Thesis
+                </p>
+                <p class="font-display text-[1.35rem] sm:text-[1.65rem] italic font-light leading-[1.35] text-ink max-w-2xl">
+                  {data.thesis}
+                </p>
+              </div>
+              <div class="pl-5 border-l-2 border-seal max-w-2xl">
+                <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-2">
+                  Kill Criteria
+                </p>
+                <p class="font-body italic text-[15px] text-ink-soft leading-relaxed">
+                  {data.kill_criteria}
+                </p>
+              </div>
+            </div>
+            {showsPanel && avg !== null ? (
+              <aside class="sm:text-right shrink-0 sm:min-w-[140px] sm:border-l border-rule sm:pl-8 sm:py-2">
+                <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2">
+                  Panel Average
+                </p>
+                <p class="font-display text-[5rem] sm:text-[6rem] font-medium leading-[0.85] text-seal tabular-nums">
+                  {avg}
+                </p>
+                <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mt-2">
+                  / 10 · {data.investor_evaluations.length} voices
+                </p>
+              </aside>
+            ) : showsPanel ? (
+              <aside class="sm:text-right shrink-0 sm:min-w-[140px] sm:border-l border-rule sm:pl-8 sm:py-2">
+                <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2">
+                  Panel
+                </p>
+                <p class="font-body italic text-sm text-ink-soft">
+                  Not yet convened.
+                </p>
+              </aside>
+            ) : null}
+          </div>
+        </section>
+      ) : (
+        <section class="border-b border-rule">
+          <div class="max-w-3xl mx-auto px-6 sm:px-10 py-16 text-center">
+            <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-soft mb-4">
+              Sealed Entry
+            </p>
+            <p class="font-display text-2xl sm:text-3xl italic font-light text-ink-soft leading-snug max-w-xl mx-auto">
+              The thesis, kill criteria, and panel for this entry are withheld
+              until it is built or shipped.
+            </p>
+            <p class="font-body italic text-sm text-ink-soft mt-6 max-w-md mx-auto">
+              Progressive disclosure protects ideas in flight without removing
+              them from the public ledger.
+            </p>
+          </div>
+        </section>
+      )
+    }
+
+    {
+      showsPanel && (
+        <section class="border-b border-rule">
+          <div class="max-w-6xl mx-auto px-6 sm:px-10 py-12 sm:py-16">
+            <InvestorPanel evaluations={data.investor_evaluations} />
+          </div>
+        </section>
+      )
+    }
+
+    {
+      showsBody && (
+        <section>
+          <div class="max-w-3xl mx-auto px-6 sm:px-10 py-12 sm:py-16">
+            <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-6">
+              The Entry
+            </p>
+            <div class="prose-journal">
+              <Content />
+            </div>
+
+            {(data.url || data.repo) && (
+              <div class="mt-12 pt-6 border-t border-rule flex gap-6 font-mono text-xs uppercase tracking-[0.15em]">
+                {data.url && (
+                  <a
+                    href={data.url}
+                    class="text-seal hover:text-ink transition-colors"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    ↗ Live
+                  </a>
+                )}
+                {data.repo && (
+                  <a
+                    href={data.repo}
+                    class="text-seal hover:text-ink transition-colors"
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    ↗ Repository
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        </section>
+      )
+    }
+
+    <nav class="border-t border-rule">
+      <div
+        class="max-w-3xl mx-auto px-6 sm:px-10 py-6 flex items-center justify-between"
+      >
+        <a
+          href="/"
+          class="font-mono text-xs uppercase tracking-[0.2em] text-ink-soft hover:text-seal transition-colors"
+        >
+          ← Back to the Pipeline
+        </a>
+        <span
+          class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hidden sm:inline"
+        >
+          End of Entry №{idStr}
+        </span>
+      </div>
+    </nav>
+  </article>
+</Layout>

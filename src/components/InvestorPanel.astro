@@ -1,0 +1,159 @@
+---
+import { getCollection } from "astro:content";
+
+interface Evaluation {
+  persona: string;
+  score: number;
+  reasoning: string;
+  mentor_version?: "v1-bootstrap" | "v2-distilled";
+}
+
+interface Props {
+  evaluations: Evaluation[];
+}
+
+const { evaluations } = Astro.props;
+
+const mentorEntries = await getCollection("mentors");
+const mentors = mentorEntries
+  .map((m) => ({ slug: m.id, ...m.data }))
+  .sort((a, b) => a.sort_order - b.sort_order);
+
+// One card per mentor in sort_order; pair with evaluation if present.
+const ordered = mentors.map((mentor) => {
+  const evaluation = evaluations.find((e) => e.persona === mentor.slug);
+  const isStale =
+    evaluation?.mentor_version &&
+    evaluation.mentor_version !== mentor.version;
+  return { mentor, evaluation, isStale };
+});
+
+const versionGlyph = (v: string) => (v === "v2-distilled" ? "●" : "◌");
+---
+
+<section class="space-y-6">
+  <header
+    class="flex items-end justify-between gap-4 border-b border-rule pb-3"
+  >
+    <div>
+      <p
+        class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
+      >
+        The Panel · {mentors.length} Voices
+      </p>
+      <h2
+        class="font-display text-2xl sm:text-3xl font-medium tracking-tight text-ink"
+      >
+        What the Investors Said
+      </h2>
+    </div>
+    <p
+      class="hidden sm:block font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft text-right"
+    >
+      AI Simulation<br />Not Actual Statements
+    </p>
+  </header>
+
+  <div
+    class={`grid grid-cols-1 sm:grid-cols-2 gap-px bg-rule ${
+      mentors.length <= 5
+        ? "lg:grid-cols-5"
+        : mentors.length <= 6
+          ? "lg:grid-cols-3"
+          : "lg:grid-cols-4"
+    }`}
+  >
+    {
+      ordered.map(({ mentor, evaluation, isStale }) => (
+        <article class="relative bg-paper px-5 pt-6 pb-6 flex flex-col">
+          <div
+            class="absolute top-0 left-0 right-0 h-[3px]"
+            style={`background: ${mentor.accent}`}
+          />
+
+          <p class="font-mono text-[8.5px] uppercase tracking-[0.2em] text-ink-soft mb-5 flex items-center gap-1.5">
+            <span
+              class="inline-block w-1 h-1 rounded-full"
+              style={`background: ${mentor.accent}`}
+            />
+            AI Sim · {mentor.slug}
+            <span
+              class="ml-auto"
+              style={`color: ${mentor.accent}`}
+              title={mentor.version}
+            >
+              {versionGlyph(mentor.version)}
+            </span>
+          </p>
+
+          <div class="flex items-start gap-3 mb-3">
+            <span
+              class="flex items-center justify-center w-9 h-9 rounded-full font-mono text-[11px] font-medium shrink-0 mt-0.5"
+              style={`background-color: color-mix(in oklch, ${mentor.accent} 12%, transparent); color: ${mentor.accent};`}
+            >
+              {mentor.avatar_initials}
+            </span>
+            <div class="min-w-0">
+              <a
+                href={`/mentors/${mentor.slug}`}
+                class="font-display font-semibold text-ink leading-tight hover:text-seal transition-colors"
+              >
+                {mentor.name}
+              </a>
+              <p class="font-body italic text-[12.5px] text-ink-soft leading-snug mt-0.5">
+                {mentor.short_bio}
+              </p>
+            </div>
+          </div>
+
+          {evaluation ? (
+            <>
+              <div class="flex items-baseline gap-1.5 mt-2 mb-3">
+                <span
+                  class="font-display font-medium text-[64px] leading-[0.85] tabular-nums"
+                  style={`color: ${mentor.accent}`}
+                >
+                  {evaluation.score}
+                </span>
+                <span class="font-mono text-[11px] uppercase tracking-wider text-ink-soft">
+                  / 10
+                </span>
+                {isStale && (
+                  <span
+                    class="ml-auto font-mono text-[9px] uppercase tracking-[0.15em] text-ink-soft italic"
+                    title={`Generated against mentor ${evaluation.mentor_version}; current is ${mentor.version}.`}
+                  >
+                    stale
+                  </span>
+                )}
+              </div>
+              <p class="font-body italic text-[13.5px] leading-[1.55] text-ink relative pl-3 border-l border-rule">
+                {evaluation.reasoning}
+              </p>
+            </>
+          ) : (
+            <div class="mt-2 mb-3">
+              <span class="font-display font-medium text-[40px] leading-none text-ink-soft tabular-nums opacity-30">
+                —
+              </span>
+              <p class="font-body italic text-[13px] text-ink-soft mt-3">
+                Awaiting the panel's review.
+              </p>
+            </div>
+          )}
+        </article>
+      ))
+    }
+  </div>
+
+  <p
+    class="font-body italic text-xs text-ink-soft max-w-3xl pt-2 leading-relaxed"
+  >
+    Each card above is generated by prompting Claude to reason in the voice of
+    the named individual, drawing on their public writings and talks. Use the
+    contrasts and disagreements as the signal — and remember none of these are
+    actual statements from the people pictured. <span class="not-italic">◌</span>
+    marks a v1-bootstrap sketch; <span class="not-italic">●</span> marks a fully
+    forged mentor.
+  </p>
+</section>

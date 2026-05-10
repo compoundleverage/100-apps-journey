@@ -1,0 +1,113 @@
+---
+import StatusBadge from "./StatusBadge.astro";
+import { averageScore } from "../lib/scoring";
+import { effectiveDisclosure, showThesis, showPanel } from "../lib/disclosure";
+import type { CollectionEntry } from "astro:content";
+
+interface Props {
+  idea: CollectionEntry<"ideas">;
+}
+
+const { idea } = Astro.props;
+const data = idea.data;
+const disclosure = effectiveDisclosure(data);
+const avg = averageScore(data.investor_evaluations);
+const idStr = String(data.id).padStart(3, "0");
+const dateStr = data.date_added.toISOString().slice(0, 10);
+const isKilled = data.status === "killed";
+const showsThesis = showThesis(disclosure);
+const showsPanel = showPanel(disclosure);
+---
+
+<a href={`/ideas/${idea.id}`} class="block group">
+  <article
+    class="border-b border-rule grid grid-cols-[auto_1fr_auto] gap-4 sm:gap-8 items-baseline px-6 sm:px-10 py-5 sm:py-7 transition-colors duration-200 group-hover:bg-paper-soft"
+  >
+    <div
+      class="font-mono text-[11px] sm:text-xs text-ink-soft tabular-nums leading-snug w-12 sm:w-16 shrink-0"
+    >
+      <span class="text-ink">№{idStr}</span>
+    </div>
+
+    <div class="min-w-0">
+      <div class="flex items-baseline gap-3 flex-wrap mb-2">
+        <h3
+          class={`font-display text-lg sm:text-2xl font-medium tracking-tight leading-[1.15] ${isKilled ? "line-through text-ink-soft" : "text-ink group-hover:text-seal"} transition-colors duration-200`}
+        >
+          {data.title}
+        </h3>
+        <StatusBadge status={data.status} />
+        {
+          !showsThesis && (
+            <span
+              class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft italic"
+              title="In stealth — disclosed once it ships or is killed."
+            >
+              stealth
+            </span>
+          )
+        }
+      </div>
+      {
+        showsThesis ? (
+          <p class="font-body italic text-[15px] sm:text-base text-ink-soft leading-snug max-w-3xl">
+            {data.thesis}
+          </p>
+        ) : (
+          <p class="font-body italic text-[15px] sm:text-base text-ink-soft leading-snug max-w-3xl">
+            <span class="opacity-60">— Thesis withheld until the entry is built or shipped.</span>
+          </p>
+        )
+      }
+      <div
+        class="flex items-center gap-3 sm:gap-4 mt-3 font-mono text-[10px] uppercase tracking-[0.15em] text-ink-soft flex-wrap"
+      >
+        <span>Added {dateStr}</span>
+        {
+          showsThesis && (
+            <>
+              <span class="opacity-50">·</span>
+              <span>Budget {data.time_budget}</span>
+            </>
+          )
+        }
+        {
+          showsThesis && data.tags.length > 0 && (
+            <>
+              <span class="opacity-50">·</span>
+              <span>{data.tags.slice(0, 3).join(" / ")}</span>
+            </>
+          )
+        }
+      </div>
+    </div>
+
+    <div
+      class="flex flex-col items-end gap-0.5 w-14 sm:w-20 shrink-0 text-right"
+    >
+      {
+        showsPanel && avg !== null ? (
+          <>
+            <span class="font-display text-2xl sm:text-3xl font-medium text-ink leading-none tabular-nums">
+              {avg}
+            </span>
+            <span class="font-mono text-[9px] uppercase tracking-[0.15em] text-ink-soft">
+              avg / 10
+            </span>
+          </>
+        ) : showsPanel ? (
+          <span class="font-mono text-[10px] text-ink-soft italic">
+            Pending
+          </span>
+        ) : (
+          <span
+            class="font-mono text-[10px] text-ink-soft italic"
+            title="Panel withheld until shipped or killed."
+          >
+            sealed
+          </span>
+        )
+      }
+    </div>
+  </article>
+</a>

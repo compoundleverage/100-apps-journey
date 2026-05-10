@@ -1,0 +1,295 @@
+---
+import { getCollection } from "astro:content";
+
+type LoadingState =
+  | "queued"
+  | "reading"
+  | "consulting"
+  | "composing"
+  | "signed"
+  | "failed";
+
+interface SignedResult {
+  score: number;
+  reasoning: string;
+}
+
+interface Props {
+  /** Restrict to a subset; default = full panel by sort_order. */
+  mentorSlugs?: string[];
+  /** Per-mentor state. Default: queued. */
+  states?: Record<string, LoadingState>;
+  /** When state === "signed", show the score & reasoning. */
+  signed?: Record<string, SignedResult>;
+  /** Optional caption above the panel. */
+  caption?: string;
+  /** Title text. Defaults to "What the Investors Said" (matches InvestorPanel). */
+  title?: string;
+}
+
+const {
+  mentorSlugs,
+  states = {},
+  signed = {},
+  caption,
+  title = "What the Investors Said",
+} = Astro.props;
+
+const allMentors = await getCollection("mentors");
+const mentors = (
+  mentorSlugs
+    ? allMentors.filter((m) => mentorSlugs.includes(m.id))
+    : allMentors
+).sort((a, b) => a.data.sort_order - b.data.sort_order);
+
+const stateLabels: Record<LoadingState, string> = {
+  queued: "awaiting brief",
+  reading: "reading the file",
+  consulting: "consulting the record",
+  composing: "composing the note",
+  signed: "signed",
+  failed: "could not reach",
+};
+
+const stateProgress: Record<LoadingState, number> = {
+  queued: 0,
+  reading: 33,
+  consulting: 66,
+  composing: 90,
+  signed: 100,
+  failed: 100,
+};
+
+const stateGlyph: Record<LoadingState, string> = {
+  queued: "◌",
+  reading: "◌",
+  consulting: "◐",
+  composing: "◐",
+  signed: "●",
+  failed: "✕",
+};
+
+const cards = mentors.map((m) => {
+  const state = states[m.id] ?? "queued";
+  return {
+    mentor: m,
+    state,
+    signed: signed[m.id],
+  };
+});
+
+const signedCount = cards.filter((c) => c.state === "signed").length;
+const failedCount = cards.filter((c) => c.state === "failed").length;
+const total = cards.length;
+const inProgress = total - signedCount - failedCount;
+
+// Average uses only signed cards. Failed cards are excluded with footnote.
+const signedScores = cards
+  .filter((c) => c.state === "signed" && c.signed)
+  .map((c) => c.signed!.score);
+const avg =
+  signedScores.length > 0
+    ? Math.round(
+        (signedScores.reduce((a, b) => a + b, 0) / signedScores.length) * 10,
+      ) / 10
+    : null;
+---
+
+<section class="space-y-6">
+  <header class="flex items-end justify-between gap-4 border-b border-rule pb-3">
+    <div>
+      <p
+        class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
+      >
+        {
+          caption ??
+            (signedCount === total
+              ? `The Panel · ${total} Voices · Signed`
+              : `The Panel · ${signedCount}/${total} signed${failedCount > 0 ? ` · ${failedCount} unreachable` : ""}`)
+        }
+      </p>
+      <h2
+        class="font-display text-2xl sm:text-3xl font-medium tracking-tight text-ink"
+      >
+        {title}
+      </h2>
+    </div>
+    <p
+      class="hidden sm:block font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft text-right"
+    >
+      AI Simulation<br />Not Actual Statements
+    </p>
+  </header>
+
+  <div
+    class={`grid grid-cols-1 sm:grid-cols-2 gap-px bg-rule ${
+      total <= 5
+        ? "lg:grid-cols-5"
+        : total <= 6
+          ? "lg:grid-cols-3"
+          : "lg:grid-cols-4"
+    }`}
+  >
+    {
+      cards.map(({ mentor, state, signed: result }) => {
+        const m = mentor.data;
+        const accent = m.accent;
+        const isSigned = state === "signed";
+        const isFailed = state === "failed";
+        const isInFlight = !isSigned && !isFailed;
+        return (
+          <article class="relative bg-paper px-5 pt-6 pb-6 flex flex-col">
+            <div
+              class="absolute top-0 left-0 right-0 h-[3px]"
+              style={`background: ${accent}; opacity: ${state === "queued" ? "0.25" : "1"}; transition: opacity 600ms cubic-bezier(0.2, 0.7, 0.2, 1);`}
+            />
+
+            <p class="font-mono text-[8.5px] uppercase tracking-[0.2em] text-ink-soft mb-5 flex items-center gap-1.5">
+              <span
+                class="inline-block w-1 h-1 rounded-full"
+                style={`background: ${accent}; opacity: ${state === "queued" ? "0.3" : "1"};`}
+              />
+              AI Sim · {mentor.id}
+              <span
+                class="ml-auto leading-none"
+                style={`color: ${accent}; opacity: ${state === "queued" ? "0.35" : "1"}; transition: opacity 600ms;`}
+              >
+                {stateGlyph[state]}
+              </span>
+            </p>
+
+            <div class="flex items-start gap-3 mb-3">
+              <span
+                class="flex items-center justify-center w-9 h-9 rounded-full font-mono text-[11px] font-medium shrink-0 mt-0.5"
+                style={`background-color: color-mix(in oklch, ${accent} 12%, transparent); color: ${accent}; opacity: ${state === "queued" ? "0.4" : "1"}; transition: opacity 600ms;`}
+              >
+                {m.avatar_initials}
+              </span>
+              <div class="min-w-0">
+                <p class="font-display font-semibold text-ink leading-tight">
+                  {m.name}
+                </p>
+                <p class="font-body italic text-[12.5px] text-ink-soft leading-snug mt-0.5">
+                  {m.short_bio}
+                </p>
+              </div>
+            </div>
+
+            {/* Hairline progress: 1px line that walks 0 → 33 → 66 → 90 → 100 in stepped jumps */}
+            <div class="mt-2 mb-4 h-px bg-rule relative overflow-hidden">
+              <span
+                class="absolute inset-y-0 left-0 transition-[width] duration-700 ease-[cubic-bezier(0.2,0.7,0.2,1)]"
+                style={`width: ${stateProgress[state]}%; background: ${isFailed ? "var(--color-killed)" : accent}; opacity: ${state === "queued" ? "0" : "1"};`}
+              />
+            </div>
+
+            {isSigned && result ? (
+              <>
+                <div class="flex items-baseline gap-1.5 mb-3">
+                  <span
+                    class="font-display font-medium text-[64px] leading-[0.85] tabular-nums"
+                    style={`color: ${accent}; animation: signed-typeset 600ms cubic-bezier(0.2, 0.7, 0.2, 1) both;`}
+                  >
+                    {result.score}
+                  </span>
+                  <span class="font-mono text-[11px] uppercase tracking-wider text-ink-soft">
+                    / 10
+                  </span>
+                </div>
+                <p class="font-body italic text-[13.5px] leading-[1.55] text-ink relative pl-3 border-l border-rule">
+                  {result.reasoning}
+                </p>
+              </>
+            ) : isFailed ? (
+              <>
+                <div class="flex items-baseline gap-1.5 mb-3">
+                  <span
+                    class="font-display font-medium text-[40px] leading-[0.85] text-ink-soft tabular-nums opacity-50"
+                  >
+                    —
+                  </span>
+                </div>
+                <p class="font-body italic text-[13px] leading-[1.55] text-ink-soft pl-3 border-l border-rule">
+                  Could not reach {m.name}.
+                  <a
+                    href="#"
+                    class="ml-1 not-italic font-mono text-[10px] uppercase tracking-[0.15em] text-seal hover:text-ink transition-colors"
+                  >
+                    Retry →
+                  </a>
+                </p>
+              </>
+            ) : (
+              <>
+                <div class="flex items-baseline gap-1.5 mb-3">
+                  <span
+                    class="font-display font-medium text-[40px] leading-[0.85] text-ink-soft tabular-nums"
+                    style={`opacity: ${state === "queued" ? "0.18" : "0.32"}; transition: opacity 600ms;`}
+                  >
+                    —
+                  </span>
+                </div>
+                <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft pl-3 border-l border-rule">
+                  {stateLabels[state]}
+                </p>
+              </>
+            )}
+          </article>
+        );
+      })
+    }
+  </div>
+
+  <div class="flex items-baseline gap-3 flex-wrap pt-2">
+    <p class="font-body italic text-xs text-ink-soft max-w-2xl leading-relaxed">
+      Each card is an AI simulation, generated by prompting Claude to reason in the named individual's voice from public writings and talks. None of these are actual statements.
+    </p>
+    {
+      avg !== null && (
+        <p
+          class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft ml-auto whitespace-nowrap"
+          title={`Average across ${signedScores.length} signed evaluations`}
+        >
+          Avg <span class="font-display text-base text-ink tabular-nums">{avg}</span>
+          {" "}/ 10
+          {failedCount > 0 && (
+            <span class="text-ink-soft normal-case italic"> ({signedScores.length} of {total})</span>
+          )}
+        </p>
+      )
+    }
+    {
+      avg === null && inProgress > 0 && (
+        <p class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft ml-auto whitespace-nowrap">
+          {inProgress} in flight
+        </p>
+      )
+    }
+  </div>
+</section>
+
+<style>
+  @keyframes signed-typeset {
+    0% {
+      opacity: 0;
+      transform: translateY(4px);
+      letter-spacing: -0.04em;
+    }
+    60% {
+      opacity: 1;
+      transform: translateY(0);
+      letter-spacing: 0.02em;
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+      letter-spacing: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [style*="signed-typeset"] {
+      animation: none !important;
+    }
+  }
+</style>

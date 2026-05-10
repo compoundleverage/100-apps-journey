@@ -1,0 +1,33 @@
+---
+type Status = "idea" | "building" | "shipped" | "killed";
+
+interface Props {
+  status: Status;
+  size?: "sm" | "md";
+}
+
+const { status, size = "sm" } = Astro.props;
+
+const config: Record<
+  Status,
+  { label: string; mark: string; color: string }
+> = {
+  idea: { label: "Idea", mark: "◌", color: "var(--color-idea)" },
+  building: { label: "Building", mark: "◐", color: "var(--color-building)" },
+  shipped: { label: "Shipped", mark: "●", color: "var(--color-shipped)" },
+  killed: { label: "Killed", mark: "✕", color: "var(--color-killed)" },
+};
+
+const { label, mark, color } = config[status];
+const padX = size === "sm" ? "px-1.5" : "px-2";
+const padY = size === "sm" ? "py-[2px]" : "py-1";
+const text = size === "sm" ? "text-[9px]" : "text-[10px]";
+---
+
+<span
+  class={`inline-flex items-center gap-1 font-mono ${text} ${padX} ${padY} uppercase tracking-[0.18em] border border-current`}
+  style={`color: ${color}`}
+>
+  <span aria-hidden="true" class="leading-none">{mark}</span>
+  <span class="leading-none">{label}</span>
+</span>

@@ -1,0 +1,156 @@
+---
+import "../styles/global.css";
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const {
+  title,
+  description = "A 100-day public ledger of small app experiments, evaluated by an AI panel of investors.",
+} = Astro.props;
+
+const pathname = Astro.url.pathname;
+const isActive = (path: string) =>
+  path === "/" ? pathname === "/" : pathname.startsWith(path);
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300..900&family=Spectral:ital,wght@0,400;0,500;0,700;1,400;1,500&family=JetBrains+Mono:wght@400;500&display=swap"
+    />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#f7f3ea" />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <meta property="og:type" content="website" />
+  </head>
+  <body class="bg-paper text-ink min-h-screen flex flex-col overflow-x-hidden">
+    <header class="border-b border-rule">
+      <div
+        class="max-w-6xl mx-auto px-5 sm:px-10 py-5 sm:py-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-8"
+      >
+        <a href="/" class="block group">
+          <p
+            class="font-mono text-[9px] sm:text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
+          >
+            Vol. I · MMXXVI
+          </p>
+          <h1
+            class="font-display font-semibold text-2xl sm:text-4xl tracking-tight text-ink leading-none group-hover:text-seal transition-colors duration-200"
+          >
+            100 Apps Journey
+          </h1>
+        </a>
+        <nav
+          class="flex items-baseline gap-4 sm:gap-7 font-mono text-[10px] sm:text-xs uppercase tracking-[0.12em] sm:tracking-[0.15em] flex-wrap"
+        >
+          <a
+            href="/"
+            class={`hover:text-seal transition-colors duration-200 ${isActive("/") ? "text-ink" : "text-ink-soft"}`}
+          >
+            Pipeline
+          </a>
+          <a
+            href="/stats"
+            class={`hover:text-seal transition-colors duration-200 ${isActive("/stats") ? "text-ink" : "text-ink-soft"}`}
+          >
+            Standings
+          </a>
+          <a
+            href="/mentors"
+            class={`hover:text-seal transition-colors duration-200 ${isActive("/mentors") ? "text-ink" : "text-ink-soft"}`}
+          >
+            Bench
+          </a>
+          <a
+            href="/about"
+            class={`hover:text-seal transition-colors duration-200 ${isActive("/about") ? "text-ink" : "text-ink-soft"}`}
+          >
+            Method
+          </a>
+        </nav>
+      </div>
+    </header>
+
+    <main class="flex-1">
+      <slot />
+    </main>
+
+    <footer class="border-t border-rule mt-20">
+      <div
+        class="max-w-6xl mx-auto px-6 sm:px-10 py-10 grid sm:grid-cols-3 gap-8"
+      >
+        <div>
+          <p class="font-display font-medium text-ink mb-1 text-lg">
+            100 Apps Journey
+          </p>
+          <p class="font-body italic text-sm text-ink-soft leading-snug">
+            A public ledger of small experiments, evaluated by an AI panel.
+          </p>
+        </div>
+        <div>
+          <p
+            class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3"
+          >
+            Sections
+          </p>
+          <ul class="font-body text-sm space-y-1.5">
+            <li>
+              <a href="/" class="hover:text-seal transition-colors"
+                >The Pipeline</a
+              >
+            </li>
+            <li>
+              <a href="/stats" class="hover:text-seal transition-colors"
+                >The Standings</a
+              >
+            </li>
+            <li>
+              <a href="/mentors" class="hover:text-seal transition-colors"
+                >The Bench</a
+              >
+            </li>
+            <li>
+              <a href="/about" class="hover:text-seal transition-colors"
+                >Methodology</a
+              >
+            </li>
+          </ul>
+        </div>
+        <div class="sm:text-right">
+          <p
+            class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-3"
+          >
+            On the Panel
+          </p>
+          <p
+            class="font-body italic text-xs text-ink-soft leading-relaxed max-w-sm sm:ml-auto"
+          >
+            Investor evaluations on this site are AI-generated simulations of
+            how each person might evaluate, based on their public writings and
+            talks. They are not actual statements or endorsements.
+          </p>
+        </div>
+      </div>
+      <div class="border-t border-rule">
+        <div
+          class="max-w-6xl mx-auto px-6 sm:px-10 py-4 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft"
+        >
+          <span>№ 100 / Day {`<= 100`}</span>
+          <span>Set in Fraunces · Spectral · JetBrains Mono</span>
+        </div>
+      </div>
+    </footer>
+  </body>
+</html>

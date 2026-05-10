@@ -1,0 +1,23 @@
+# build output
+dist/
+.astro/
+
+# deps
+node_modules/
+
+# env
+.env
+.env.production
+
+# misc
+.DS_Store
+*.log
+.vercel/
+.netlify/
+
+# bun
+bun.lock
+.gstack/
+
+# persona-forge mid-flight WIP (atomic mv to src/content/mentors/[slug]/ on Phase 5)
+.persona-forge/

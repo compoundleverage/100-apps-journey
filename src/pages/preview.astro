@@ -1,0 +1,206 @@
+---
+import Layout from "../layouts/Layout.astro";
+import LoadingPanel from "../components/LoadingPanel.astro";
+import { getCollection } from "astro:content";
+
+const isDev = import.meta.env.DEV;
+
+const allMentors = await getCollection("mentors");
+const slugs = allMentors
+  .sort((a, b) => a.data.sort_order - b.data.sort_order)
+  .map((m) => m.id);
+
+// Stage 1: all queued (just kicked off)
+const stateAllQueued = Object.fromEntries(slugs.map((s) => [s, "queued"]));
+
+// Stage 2: mid-flight, mixed states
+const stateMidFlight = Object.fromEntries(
+  slugs.map((s, i) => [
+    s,
+    (["reading", "consulting", "composing", "consulting", "reading", "composing"][i] ?? "reading"),
+  ]),
+);
+
+// Stage 3: all signed (mock scores)
+const stateAllSigned = Object.fromEntries(slugs.map((s) => [s, "signed"]));
+const mockSignedResults = {
+  "steve-jobs": {
+    score: 4,
+    reasoning:
+      "He might note that the cabinet back here is hollow — the 'product' is a tracker for things that don't exist yet. A bicycle only matters if it's actually taking someone somewhere. Show me what a person does on Tuesday morning and why they couldn't stop.",
+  },
+  karpathy: {
+    score: 7,
+    reasoning:
+      "The meta-move is genuinely clever — dogfooding as narrative, the journey is the content. The bet here is pretty thin technically (Astro + markdown + Claude API is the simplest thing that works) but the moat lives in the discipline, not the code.",
+  },
+  musk: {
+    score: 6,
+    reasoning:
+      "The investor panel mechanic creates real narrative tension rather than just another dashboard. But 100 apps in 100 days is a commitment function, not a product thesis — the question is whether any of the 99 subsequent apps have 10x ambition.",
+  },
+  "garry-tan": {
+    score: 6,
+    reasoning:
+      "Build-in-public framing is genuinely clever. Garry would push hard on who is the second user — right now this looks like a personal experiment dressed as a startup. The kill criteria are good founder hygiene though.",
+  },
+  naval: {
+    score: 7,
+    reasoning:
+      "The journey-as-content collapses distribution and product into a single compounding asset, which is rare. Naval would wonder if this is a vehicle for genuine creation or a very elegant procrastination machine dressed in naval-coded language about compounding.",
+  },
+  pg: {
+    score: 5,
+    reasoning:
+      "The meta-trap is real — building the tracker as app #1 is clever framing, but 'journey as content' sounds good in a thesis and dissolves on contact with reality. What might redeem it is if the 99 subsequent apps are real and weird, and the tracker just happens to exist.",
+  },
+};
+
+// Stage 4: 5 signed + 1 unreachable (PG fails)
+const stateWithFailure = { ...stateAllSigned, pg: "failed" };
+const signedExceptFailed = { ...mockSignedResults };
+delete (signedExceptFailed as Record<string, unknown>).pg;
+---
+
+<Layout title="LoadingPanel preview · 100 Apps Journey">
+  {
+    !isDev ? (
+      <article class="max-w-3xl mx-auto px-6 sm:px-10 py-32 text-center">
+        <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-ink-soft mb-6">
+          Development preview
+        </p>
+        <p class="font-display text-2xl text-ink-soft italic mb-3">
+          This page is dev-only.
+        </p>
+        <p class="font-body italic text-sm text-ink-soft max-w-md mx-auto leading-relaxed">
+          The LoadingPanel demo lives behind <code class="font-mono text-xs not-italic">import.meta.env.DEV</code> —
+          run <code class="font-mono text-xs not-italic">bun run dev</code> locally to view it.
+        </p>
+        <a
+          href="/"
+          class="inline-block mt-10 font-mono text-xs uppercase tracking-[0.2em] text-seal hover:text-ink transition-colors"
+        >
+          ← Back to the pipeline
+        </a>
+      </article>
+    ) : (
+      <article>
+        <header class="border-b border-rule">
+          <div class="max-w-6xl mx-auto px-6 sm:px-10 pt-12 sm:pt-16 pb-8">
+            <div class="flex items-center gap-3 mb-5">
+              <span class="block w-6 h-px bg-seal" />
+              <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal">
+                LoadingPanel · Dev Preview
+              </p>
+            </div>
+            <h1 class="font-display text-[2.25rem] sm:text-[3rem] font-medium tracking-[-0.02em] leading-[0.95] max-w-3xl mb-6">
+              How the panel arrives.
+            </h1>
+            <p class="font-body italic text-base sm:text-lg text-ink-soft max-w-2xl leading-snug">
+              Editorial publishing metaphor. States walk a hairline 0% → 33% → 66% → 90% → 100% in stepped jumps. On <em>signed</em>, the glyph turns ● and the score type-sets in. No spinners, no pulses. The avg footer recomputes around any unreachable card.
+            </p>
+            <div class="mt-8 grid grid-cols-2 sm:grid-cols-5 gap-4 max-w-3xl">
+              <a href="#queued" class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hover:text-seal block">
+                ◌ <span class="ml-1">awaiting</span>
+              </a>
+              <a href="#midflight" class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hover:text-seal block">
+                ◐ <span class="ml-1">mid-flight</span>
+              </a>
+              <a href="#signed" class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hover:text-seal block">
+                ● <span class="ml-1">signed</span>
+              </a>
+              <a href="#failed" class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hover:text-seal block">
+                ✕ <span class="ml-1">unreachable</span>
+              </a>
+            </div>
+          </div>
+        </header>
+
+        <section id="queued" class="border-b border-rule">
+          <div class="max-w-6xl mx-auto px-6 sm:px-10 py-12">
+            <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
+              Stage 1 — Brief just dispatched
+            </p>
+            <p class="font-body italic text-sm text-ink-soft mb-8 max-w-2xl">
+              All cards in <code class="font-mono text-xs">queued</code>. Stripe at 25% opacity, glyph muted, hairline invisible. The panel is "set" — it has not yet "spoken."
+            </p>
+            <LoadingPanel
+              states={stateAllQueued}
+              caption="The Panel · 0/6 signed · in flight"
+              title="Brief dispatched"
+            />
+          </div>
+        </section>
+
+        <section id="midflight" class="border-b border-rule">
+          <div class="max-w-6xl mx-auto px-6 sm:px-10 py-12">
+            <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
+              Stage 2 — Mid-flight, mixed states
+            </p>
+            <p class="font-body italic text-sm text-ink-soft mb-8 max-w-2xl">
+              Cards spread across <code class="font-mono text-xs">reading</code> / <code class="font-mono text-xs">consulting</code> / <code class="font-mono text-xs">composing</code>. Hairlines walk in three stepped jumps. State labels are mono small-caps; no narrative theatrics.
+            </p>
+            <LoadingPanel
+              states={stateMidFlight}
+              caption="The Panel · 0/6 signed · in flight"
+              title="Mid-flight"
+            />
+          </div>
+        </section>
+
+        <section id="signed" class="border-b border-rule">
+          <div class="max-w-6xl mx-auto px-6 sm:px-10 py-12">
+            <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
+              Stage 3 — All signed
+            </p>
+            <p class="font-body italic text-sm text-ink-soft mb-8 max-w-2xl">
+              Each card resolves to <code class="font-mono text-xs">signed</code>: glyph snaps to ●, hairline at full, score type-sets in (subtle ease, 600ms), reasoning takes the left rule. This is the steady state — same shape as the production InvestorPanel, by design.
+            </p>
+            <LoadingPanel
+              states={stateAllSigned}
+              signed={mockSignedResults}
+              caption="The Panel · 6/6 signed"
+              title="All signed"
+            />
+          </div>
+        </section>
+
+        <section id="failed" class="border-b border-rule">
+          <div class="max-w-6xl mx-auto px-6 sm:px-10 py-12">
+            <p class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3">
+              Stage 4 — One unreachable
+            </p>
+            <p class="font-body italic text-sm text-ink-soft mb-8 max-w-2xl">
+              PG card fails (rate limit, network drop, etc.). Glyph becomes ✕ in the killed-red. Italic <em>"Could not reach Paul Graham"</em> + retry hairline link. Average score recomputes from 5 signed and footnotes the absence: <code class="font-mono text-xs">(5 of 6)</code>.
+            </p>
+            <LoadingPanel
+              states={stateWithFailure}
+              signed={signedExceptFailed}
+              caption="The Panel · 5/6 signed · 1 unreachable"
+              title="One unreachable"
+            />
+          </div>
+        </section>
+
+        <section>
+          <div class="max-w-3xl mx-auto px-6 sm:px-10 py-12">
+            <h2 class="font-display text-xl font-medium tracking-tight mb-4">
+              Design notes
+            </h2>
+            <div class="prose-journal text-ink space-y-3">
+              <p>
+                Motion vocabulary is intentionally limited to the existing status glyphs (◌ ◐ ● ✕). No spinners, no pulses, no glow. The hairline is the only continuous animation, and even that is stepped. Editorial discipline rather than kinetic theatre.
+              </p>
+              <p>
+                Failure is not catastrophic — one card going ✕ does not nuke the panel. The remaining cards complete; the average recomputes; the failure is documented in the footer with an honest count. Same posture as the rest of the site.
+              </p>
+              <p>
+                This page is gated behind <code class="font-mono text-xs">import.meta.env.DEV</code>. In production it renders a single redirect-style placeholder, so design surfaces don't leak past the build boundary.
+              </p>
+            </div>
+          </div>
+        </section>
+      </article>
+    )
+  }
+</Layout>
