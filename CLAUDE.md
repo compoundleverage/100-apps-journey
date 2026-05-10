@@ -9,6 +9,8 @@ A public ledger of small app experiments — 100 attempts in 100 days, each eval
 - **Node 22+** required for Astro tooling (`nvm use 22`)
 - **TypeScript strict**
 - `@anthropic-ai/sdk` for panel evaluations (Claude Sonnet 4.6 default)
+- `satori` + `@resvg/resvg-js` for build-time OG image rendering
+- **Production**: <https://100-apps-journey.vercel.app/>
 
 ## Common commands
 
@@ -22,7 +24,14 @@ bun run preview                    # preview prod build (gates dev-only routes l
 bun run evaluate <idea-slug>       # run AI panel on one idea
 bun run evaluate --all             # run on every idea
 bun run evaluate --all --model=claude-haiku-4-5-20251001  # cheaper
+
+bun run validate-content           # cross-collection schema check (mentors ↔ ideas); chained into build
+bun run validate-sources           # source-reliability rubric check on mentor citations (on demand)
 ```
+
+OG images for `/`, every idea, and every mentor are generated at build time
+under `dist/og/...` via `src/lib/og/` (satori → SVG, resvg → PNG). The site
+default lives at `/og.png`; per-page OG paths are wired in each layout.
 
 ## Content shape
 
@@ -89,4 +98,4 @@ When a user request matches an available skill, invoke it via the Skill tool.
 
 ## Disclaimer
 
-Every panel evaluation is an **AI-generated simulation** based on each individual's public writings and talks. Cards are clearly labeled "AI Sim" and the site footer carries a permanent disclaimer. None of these are actual statements or endorsements from the people simulated.
+Every panel evaluation is an **AI-generated simulation** based on each individual's public writings and talks. The site footer (`Layout.astro`) and `/about` carry a permanent disclaimer; per-card "AI Sim" chrome was retired in commit `512de63` in favor of the macro disclaimer (i18n + first-person mentor voice work). None of these are actual statements or endorsements from the people simulated.

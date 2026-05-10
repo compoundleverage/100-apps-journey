@@ -41,11 +41,16 @@ const dateKilled = data.date_killed?.toISOString().slice(0, 10);
 const description = showsThesis
   ? data.thesis
   : `Idea №${idStr} · 隐身中，动工或上线后公开。`;
+
+// Per-idea OG only when the thesis is disclosed; otherwise fall back to site default
+// so we don't leak gated content via the social card.
+const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
 ---
 
 <Layout
   title={`${data.title} · 100 Apps Journey`}
   description={description}
+  ogImage={ogImage}
 >
   <article>
     <header class="border-b border-rule">

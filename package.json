@@ -5,18 +5,26 @@
   "private": true,
   "scripts": {
     "dev": "astro dev",
-    "build": "astro build",
+    "build": "bun run validate-content && astro build",
     "preview": "astro preview",
     "astro": "astro",
     "check": "astro check",
-    "evaluate": "bun run scripts/evaluate.ts"
+    "evaluate": "bun run scripts/evaluate.ts",
+    "validate-content": "bun run scripts/validate-content.ts",
+    "validate-sources": "bun run scripts/validate-sources.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",
     "@astrojs/check": "^0.9.4",
+    "@fontsource/fraunces": "^5.2.9",
+    "@fontsource/jetbrains-mono": "^5.2.8",
+    "@fontsource/noto-serif-sc": "^5.2.8",
+    "@fontsource/spectral": "^5.2.8",
+    "@resvg/resvg-js": "^2.6.2",
     "@tailwindcss/vite": "^4.0.0",
     "astro": "^5.0.0",
     "gray-matter": "^4.0.3",
+    "satori": "^0.26.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5.7.0"
   },

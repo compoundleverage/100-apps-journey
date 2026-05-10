@@ -4,14 +4,18 @@ import "../styles/global.css";
 interface Props {
   title: string;
   description?: string;
+  ogImage?: string;
 }
 
 const {
   title,
   description = "公开的 100 天小实验日志，每个 idea 都由 AI 模拟的真人投资人评分。",
+  ogImage = "/og.png",
 } = Astro.props;
 
 const pathname = Astro.url.pathname;
+const canonicalUrl = new URL(pathname, Astro.site).href;
+const absoluteOgImage = new URL(ogImage, Astro.site).href;
 const isActive = (path: string) =>
   path === "/" ? pathname === "/" : pathname.startsWith(path);
 ---
@@ -31,9 +35,18 @@ const isActive = (path: string) =>
     <title>{title}</title>
     <meta name="description" content={description} />
     <meta name="theme-color" content="#f7f3ea" />
+    <link rel="canonical" href={canonicalUrl} />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonicalUrl} />
+    <meta property="og:image" content={absoluteOgImage} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={absoluteOgImage} />
   </head>
   <body class="bg-paper text-ink min-h-screen flex flex-col overflow-x-hidden">
     <header class="border-b border-rule">
