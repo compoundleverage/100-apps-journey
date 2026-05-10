@@ -10,7 +10,6 @@ interface Props {
 
 const lang = getLang(Astro.url);
 const s = STRINGS[lang];
-const altLang = lang === "zh" ? "en" : "zh";
 
 const {
   title,
@@ -21,9 +20,18 @@ const {
 const pathname = Astro.url.pathname;
 const canonicalUrl = new URL(localizedHref(pathname, lang), Astro.site).href;
 const absoluteOgImage = new URL(ogImage, Astro.site).href;
-const altHref = localizedHref(pathname, altLang);
+
+// hreflang alternates: canonical for each language. zh stays clean URL,
+// en uses ?lang=en. Search engines index both as separate documents.
 const zhHref = new URL(localizedHref(pathname, "zh"), Astro.site).href;
 const enHref = new URL(localizedHref(pathname, "en"), Astro.site).href;
+
+// Toggle URLs: ALWAYS explicit `?lang=X` for both directions. This is the
+// fix for the "toggle stops working after navigation" bug — without an
+// explicit query param, the localStorage redirect script kept bouncing the
+// user back to whatever was last stored.
+const toggleZhHref = `${pathname}?lang=zh`;
+const toggleEnHref = `${pathname}?lang=en`;
 const isActive = (path: string) =>
   path === "/" ? pathname === "/" : pathname.startsWith(path);
 
@@ -130,13 +138,25 @@ const aboutHref = localizedHref("/about", lang);
           >
             {s.nav_method}
           </a>
-          <a
-            href={altHref}
-            aria-label={`Switch language to ${altLang === "zh" ? "中文" : "English"}`}
-            class="hover:text-seal transition-colors duration-200 text-ink-soft border border-rule rounded-sm px-1.5 py-0.5"
-          >
-            {s.lang_toggle_to}
-          </a>
+          <span class="inline-flex items-center gap-1.5 border border-rule rounded-sm px-1.5 py-0.5">
+            <a
+              href={toggleZhHref}
+              aria-label="切换到中文"
+              aria-current={lang === "zh" ? "true" : undefined}
+              class={lang === "zh" ? "text-seal" : "text-ink-soft hover:text-seal transition-colors duration-200"}
+            >
+              中
+            </a>
+            <span class="text-ink-soft opacity-40" aria-hidden="true">·</span>
+            <a
+              href={toggleEnHref}
+              aria-label="Switch to English"
+              aria-current={lang === "en" ? "true" : undefined}
+              class={lang === "en" ? "text-seal" : "text-ink-soft hover:text-seal transition-colors duration-200"}
+            >
+              EN
+            </a>
+          </span>
         </nav>
       </div>
     </header>
