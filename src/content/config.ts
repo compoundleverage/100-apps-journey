@@ -129,6 +129,28 @@ const ideas = defineCollection({
               }),
             )
             .optional(),
+          // Refined evaluation produced by the Clarify chat flow. The original
+          // score/reasoning above stay intact; this captures the mentor's
+          // updated take after the proposer answered follow-up questions.
+          // Storage of the dialogue itself stays in the visitor's localStorage
+          // (private). This frontmatter form is for any author-saved refinement
+          // that should ship in the public artifact (rare; visitors-only by default).
+          refined: z
+            .object({
+              score: z.number().int().min(1).max(10),
+              reasoning: z.string().min(1),
+              dimensions: z
+                .array(
+                  z.object({
+                    name: z.string(),
+                    verdict: z.enum(["pass", "fail", "unclear"]),
+                    note: z.string(),
+                  }),
+                )
+                .optional(),
+              refined_at: z.coerce.date(),
+            })
+            .optional(),
           generated_at: z.coerce.date().optional(),
           model: z.string().optional(),
           // Stamp the mentor version evaluations were generated against.

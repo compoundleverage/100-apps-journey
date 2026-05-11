@@ -1,0 +1,182 @@
+---
+import Layout from "../layouts/Layout.astro";
+import { getLang, STRINGS } from "../lib/i18n";
+
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
+---
+
+<Layout title={s.settings_page_title}>
+  <article>
+    <header class="border-b border-rule">
+      <div class="max-w-3xl mx-auto px-6 sm:px-10 pt-12 sm:pt-20 pb-10">
+        <div class="flex items-center gap-3 mb-5">
+          <span class="block w-6 h-px bg-seal"></span>
+          <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal">
+            {s.settings_section_label}
+          </p>
+        </div>
+        <h1
+          class="font-display text-[2.25rem] sm:text-[3rem] font-medium tracking-[-0.02em] leading-[0.95] mb-6"
+        >
+          {s.settings_headline}
+        </h1>
+        <p class="font-body text-base sm:text-lg text-ink-soft max-w-2xl leading-snug">
+          {s.settings_intro_p1}
+        </p>
+        <p class="font-body text-sm text-ink-soft max-w-2xl leading-snug mt-3">
+          {s.settings_intro_p2}
+        </p>
+      </div>
+    </header>
+
+    <section class="border-b border-rule">
+      <div class="max-w-3xl mx-auto px-6 sm:px-10 py-12 sm:py-16">
+        <label class="block mb-4">
+          <span
+            class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft mb-2 block"
+          >
+            {s.settings_key_label}
+          </span>
+          <input
+            id="api-key-input"
+            type="password"
+            placeholder={s.settings_key_placeholder}
+            autocomplete="off"
+            spellcheck="false"
+            class="w-full bg-transparent border-b border-ink/30 focus:border-seal outline-none font-mono text-sm py-2 px-0 transition-colors text-ink"
+          />
+          <span class="font-mono text-[10px] text-ink-soft mt-1 block">
+            {s.settings_key_help} ·
+            <a
+              href="https://console.anthropic.com/settings/keys"
+              target="_blank"
+              rel="noreferrer"
+              class="text-seal hover:text-ink transition-colors"
+            >
+              {s.settings_get_key_link}
+            </a>
+          </span>
+        </label>
+
+        <div class="flex flex-wrap gap-3 mt-6">
+          <button
+            id="btn-test"
+            type="button"
+            class="font-mono text-xs uppercase tracking-[0.18em] border border-ink px-4 py-2 hover:bg-ink hover:text-paper transition-colors"
+          >
+            {s.settings_btn_test}
+          </button>
+          <button
+            id="btn-save"
+            type="button"
+            class="font-mono text-xs uppercase tracking-[0.18em] border border-seal text-seal px-4 py-2 hover:bg-seal hover:text-paper transition-colors"
+          >
+            {s.settings_btn_save}
+          </button>
+          <button
+            id="btn-clear"
+            type="button"
+            class="font-mono text-xs uppercase tracking-[0.18em] border border-rule text-ink-soft px-4 py-2 hover:text-ink transition-colors ml-auto"
+          >
+            {s.settings_btn_clear}
+          </button>
+        </div>
+
+        <p
+          id="status-line"
+          class="font-mono text-xs text-ink-soft mt-5 h-4 transition-opacity"
+        ></p>
+      </div>
+    </section>
+
+    <section>
+      <div class="max-w-3xl mx-auto px-6 sm:px-10 py-10">
+        <h2
+          class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-3"
+        >
+          {s.settings_privacy_title}
+        </h2>
+        <p class="font-body text-sm text-ink-soft leading-relaxed max-w-2xl">
+          {s.settings_privacy_p1}
+        </p>
+        <p class="font-body text-sm text-ink-soft leading-relaxed max-w-2xl mt-3">
+          {s.settings_privacy_p2}
+        </p>
+      </div>
+    </section>
+  </article>
+
+  <script>
+    import { getApiKey, setApiKey, clearApiKey, looksLikeApiKey } from "../lib/chat/storage";
+    import { testApiKey } from "../lib/chat/client";
+    import { getLang, STRINGS } from "../lib/i18n";
+
+    const s = STRINGS[getLang(new URL(window.location.href))];
+    const input = document.getElementById("api-key-input") as HTMLInputElement | null;
+    const status = document.getElementById("status-line") as HTMLElement | null;
+    const btnTest = document.getElementById("btn-test");
+    const btnSave = document.getElementById("btn-save");
+    const btnClear = document.getElementById("btn-clear");
+    if (!input || !status || !btnTest || !btnSave || !btnClear) {
+      console.error("settings: missing dom elements");
+    } else {
+      // Show "key is set" placeholder if one exists already (don't reveal value)
+      const existing = getApiKey();
+      if (existing) {
+        input.placeholder = s.settings_status_present;
+      }
+
+      const setStatus = (text: string) => {
+        status.textContent = text;
+      };
+
+      btnTest.addEventListener("click", async () => {
+        const candidate = input.value.trim() || existing || "";
+        if (!candidate) {
+          setStatus(s.settings_status_invalid("empty"));
+          return;
+        }
+        if (!looksLikeApiKey(candidate)) {
+          setStatus(s.settings_status_invalid(s.settings_key_help));
+          return;
+        }
+        setStatus(s.settings_status_testing);
+        const result = await testApiKey(candidate);
+        if (result.ok) {
+          setStatus(s.settings_status_ok);
+        } else {
+          setStatus(s.settings_status_invalid(result.error || "?"));
+        }
+      });
+
+      btnSave.addEventListener("click", () => {
+        const candidate = input.value.trim();
+        if (!candidate) return;
+        if (!looksLikeApiKey(candidate)) {
+          setStatus(s.settings_status_invalid(s.settings_key_help));
+          return;
+        }
+        setApiKey(candidate);
+        input.value = "";
+        input.placeholder = s.settings_status_present;
+        setStatus(s.settings_status_saved);
+      });
+
+      btnClear.addEventListener("click", () => {
+        clearApiKey();
+        input.value = "";
+        input.placeholder = s.settings_key_placeholder;
+        setStatus(s.settings_status_cleared);
+      });
+
+      // Enter to test
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter") {
+          e.preventDefault();
+          btnTest.click();
+        }
+      });
+    }
+  </script>
+</Layout>

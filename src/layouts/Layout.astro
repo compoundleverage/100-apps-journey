@@ -1,6 +1,7 @@
 ---
 import "../styles/global.css";
 import { getLang, localizedHref, STRINGS } from "../lib/i18n";
+import ChatDrawer from "../components/ChatDrawer.astro";
 
 interface Props {
   title: string;
@@ -40,6 +41,7 @@ const homeHref = localizedHref("/", lang);
 const statsHref = localizedHref("/stats", lang);
 const mentorsHref = localizedHref("/mentors", lang);
 const aboutHref = localizedHref("/about", lang);
+const settingsHref = localizedHref("/settings", lang);
 ---
 
 <!doctype html>
@@ -165,6 +167,8 @@ const aboutHref = localizedHref("/about", lang);
       <slot />
     </main>
 
+    <ChatDrawer />
+
     <footer class="border-t border-rule mt-20">
       <div
         class="max-w-6xl mx-auto px-6 sm:px-10 py-10 grid sm:grid-cols-3 gap-8"
@@ -195,6 +199,9 @@ const aboutHref = localizedHref("/about", lang);
             </li>
             <li>
               <a href={aboutHref} class="hover:text-seal transition-colors">{s.nav_method}</a>
+            </li>
+            <li>
+              <a href={settingsHref} class="hover:text-seal transition-colors">{s.nav_settings}</a>
             </li>
           </ul>
         </div>

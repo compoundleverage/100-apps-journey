@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import StatusBadge from "../../components/StatusBadge.astro";
 import InvestorPanel from "../../components/InvestorPanel.astro";
+import GroupChatTrigger from "../../components/GroupChatTrigger.astro";
 import { averageScore } from "../../lib/scoring";
 import {
   effectiveDisclosure,
@@ -187,7 +188,10 @@ const ogImage = showsThesis ? `/og/ideas/${idea.id}.png` : "/og.png";
       showsPanel && (
         <section class="border-b border-rule">
           <div class="max-w-6xl mx-auto px-6 sm:px-10 py-12 sm:py-16">
-            <InvestorPanel evaluations={data.investor_evaluations} />
+            <InvestorPanel evaluations={data.investor_evaluations} ideaId={idea.id} />
+            <div class="mt-8 flex justify-center">
+              <GroupChatTrigger ideaId={idea.id} />
+            </div>
           </div>
         </section>
       )

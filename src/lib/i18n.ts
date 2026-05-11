@@ -256,6 +256,73 @@ type Strings = {
   preview_dev_only_explainer_p1: string;
   preview_dev_only_explainer_p2: string;
   preview_back_to_pipeline: string;
+
+  // Settings page (BYOK)
+  settings_page_title: string;
+  settings_section_label: string;
+  settings_headline: string;
+  settings_intro_p1: string;
+  settings_intro_p2: string;
+  settings_key_label: string;
+  settings_key_placeholder: string;
+  settings_key_help: string;
+  settings_btn_test: string;
+  settings_btn_save: string;
+  settings_btn_clear: string;
+  settings_status_testing: string;
+  settings_status_ok: string;
+  settings_status_invalid: (msg: string) => string;
+  settings_status_saved: string;
+  settings_status_cleared: string;
+  settings_status_present: string;
+  settings_get_key_link: string;
+  settings_privacy_title: string;
+  settings_privacy_p1: string;
+  settings_privacy_p2: string;
+  nav_settings: string;
+
+  // Inline API key modal (when chat attempted without key)
+  keymodal_title: string;
+  keymodal_p1: string;
+  keymodal_p2: string;
+  keymodal_open_settings: string;
+  keymodal_dismiss: string;
+
+  // Chat drawer / thread (1-on-1 + group)
+  chat_open_with: (mentorName: string) => string;
+  chat_open_panel: string;
+  chat_close: string;
+  chat_drawer_subtitle_1on1: (mentorName: string) => string;
+  chat_drawer_subtitle_group: string;
+  chat_composer_placeholder: string;
+  chat_send: string;
+  chat_thinking: string;
+  chat_error_prefix: string;
+  chat_cap_reached: (n: number) => string;
+  chat_cost_hint: string;
+  chat_clear_history: string;
+  chat_clear_confirm: string;
+  chat_empty_1on1: (mentorName: string) => string;
+  chat_empty_group: string;
+  chat_role_you: string;
+
+  // Clarify modal
+  clarify_btn: string;
+  clarify_modal_title: (mentorName: string) => string;
+  clarify_modal_intro: string;
+  clarify_loading_questions: string;
+  clarify_submit: string;
+  clarify_recomputing: string;
+  clarify_done: string;
+  clarify_refined_label: string;
+  clarify_original_label: string;
+  clarify_score_diff: (delta: number) => string;
+  clarify_answer_placeholder: string;
+
+  // Group orchestrator UX
+  group_speaker_label: (mentorName: string) => string;
+  group_pass_msg: string;
+  group_mention_hint: string;
 };
 
 const zh: Strings = {
@@ -496,6 +563,76 @@ const zh: Strings = {
   preview_dev_only_explainer_p2:
     "gate——本地运行 bun run dev 才能看到。",
   preview_back_to_pipeline: "← 回到实验池",
+
+  settings_page_title: "设置 · 100 Apps Journey",
+  settings_section_label: "设置",
+  settings_headline: "你自己的 API Key。",
+  settings_intro_p1:
+    "顾问团的对话功能（Clarify、单聊、群聊）由 Anthropic Claude 驱动。本站不替你出 API 钱——你填自己的 key，按你自己的账单结。",
+  settings_intro_p2:
+    "Key 只存在你浏览器的 localStorage 里。每次对话时通过 HTTPS 转发给 Anthropic，本服务器不记日志、不持久化。",
+  settings_key_label: "Anthropic API Key",
+  settings_key_placeholder: "sk-ant-api03-...",
+  settings_key_help: "格式：sk-ant- 开头",
+  settings_btn_test: "测试 key",
+  settings_btn_save: "保存",
+  settings_btn_clear: "清除",
+  settings_status_testing: "正在 ping Anthropic...",
+  settings_status_ok: "✓ Key 有效",
+  settings_status_invalid: (msg) => `✕ Key 无效：${msg}`,
+  settings_status_saved: "✓ 已保存到浏览器",
+  settings_status_cleared: "已清除",
+  settings_status_present: "已设置 key（不显示原值）",
+  settings_get_key_link: "去 Anthropic Console 拿一个 →",
+  settings_privacy_title: "隐私",
+  settings_privacy_p1:
+    "你的 key 永远不会被本站持久化。每次对话请求时通过 HTTPS header 转发给 Anthropic，请求结束即丢弃。",
+  settings_privacy_p2:
+    "对话历史也仅存在你浏览器本地。换设备不会同步。删除浏览器数据即清空所有记录。",
+  nav_settings: "设置",
+
+  keymodal_title: "需要先设置 API Key",
+  keymodal_p1:
+    "顾问团对话功能由你自己的 Anthropic key 驱动（本站不出钱）。先去设置页填一个再回来。",
+  keymodal_p2: "已经有 Anthropic 账号？花 30 秒就好。",
+  keymodal_open_settings: "去设置 →",
+  keymodal_dismiss: "稍后",
+
+  chat_open_with: (mentorName) => `和 ${mentorName} 聊 →`,
+  chat_open_panel: "打开顾问团圆桌 →",
+  chat_close: "关闭",
+  chat_drawer_subtitle_1on1: (mentorName) => `单独和 ${mentorName} 对话`,
+  chat_drawer_subtitle_group: "顾问团圆桌讨论",
+  chat_composer_placeholder: "继续问下去...",
+  chat_send: "发送",
+  chat_thinking: "正在思考...",
+  chat_error_prefix: "出错：",
+  chat_cap_reached: (n) => `已达到 ${n} 轮上限。新开一段对话或清空历史。`,
+  chat_cost_hint: "≈ $0.02-0.05/轮，从你自己的 Anthropic 账户出",
+  chat_clear_history: "清空本对话",
+  chat_clear_confirm: "确定清空？历史不可恢复。",
+  chat_empty_1on1: (mentorName) =>
+    `对话还没开始。${mentorName} 会先问你一个问题——按 "发送" 让他开口。`,
+  chat_empty_group: "圆桌还没开。按 \"发送\" 让所有顾问对这个 idea 各说一句。",
+  chat_role_you: "你",
+
+  clarify_btn: "Clarify →",
+  clarify_modal_title: (mentorName) => `${mentorName} 还想问几个问题`,
+  clarify_modal_intro:
+    "回答这几个尖锐的问题，他会重新评分。原评分会保留作为对照。",
+  clarify_loading_questions: "正在生成问题...",
+  clarify_submit: "提交并重新评分",
+  clarify_recomputing: "正在重新评估...",
+  clarify_done: "完成。看下面 refined 卡。",
+  clarify_refined_label: "对话后",
+  clarify_original_label: "对话前",
+  clarify_score_diff: (delta) =>
+    delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : "持平",
+  clarify_answer_placeholder: "尽量具体——给名字、给时间、给数字...",
+
+  group_speaker_label: (mentorName) => `${mentorName} 在说`,
+  group_pass_msg: "（这一轮我没什么要补充的。）",
+  group_mention_hint: "用 @ 加名字可以指定让谁先说",
 };
 
 const en: Strings = {
@@ -744,6 +881,76 @@ const en: Strings = {
   preview_dev_only_explainer_p2:
     "— only visible when you run bun run dev locally.",
   preview_back_to_pipeline: "← Back to pipeline",
+
+  settings_page_title: "Settings · 100 Apps Journey",
+  settings_section_label: "Settings",
+  settings_headline: "Your own API key.",
+  settings_intro_p1:
+    "The chat features (Clarify, 1-on-1, Panel) run on Anthropic Claude. This site doesn't pay for your usage — bring your own key, billed to your own Anthropic account.",
+  settings_intro_p2:
+    "The key lives only in your browser's localStorage. It's forwarded over HTTPS to Anthropic per request. This server never logs or persists it.",
+  settings_key_label: "Anthropic API Key",
+  settings_key_placeholder: "sk-ant-api03-...",
+  settings_key_help: "Format: starts with sk-ant-",
+  settings_btn_test: "Test key",
+  settings_btn_save: "Save",
+  settings_btn_clear: "Clear",
+  settings_status_testing: "Pinging Anthropic...",
+  settings_status_ok: "✓ Key works",
+  settings_status_invalid: (msg) => `✕ Key invalid: ${msg}`,
+  settings_status_saved: "✓ Saved to your browser",
+  settings_status_cleared: "Cleared",
+  settings_status_present: "Key is set (value not displayed)",
+  settings_get_key_link: "Get one at Anthropic Console →",
+  settings_privacy_title: "Privacy",
+  settings_privacy_p1:
+    "Your key is never persisted on this site. Each chat request forwards it to Anthropic via HTTPS header, then discards it.",
+  settings_privacy_p2:
+    "Chat history also lives only in your browser. It does not sync across devices. Clearing browser data wipes everything.",
+  nav_settings: "Settings",
+
+  keymodal_title: "Add an API key first",
+  keymodal_p1:
+    "The mentor chat features run on your own Anthropic key (this site doesn't cover usage). Add one in settings and come back.",
+  keymodal_p2: "Already have an Anthropic account? 30 seconds.",
+  keymodal_open_settings: "Open settings →",
+  keymodal_dismiss: "Later",
+
+  chat_open_with: (mentorName) => `Talk to ${mentorName} →`,
+  chat_open_panel: "Open panel discussion →",
+  chat_close: "Close",
+  chat_drawer_subtitle_1on1: (mentorName) => `1-on-1 with ${mentorName}`,
+  chat_drawer_subtitle_group: "Bench panel discussion",
+  chat_composer_placeholder: "Push back, ask, or commit...",
+  chat_send: "Send",
+  chat_thinking: "Thinking...",
+  chat_error_prefix: "Error: ",
+  chat_cap_reached: (n) => `Conversation cap (${n} turns) reached. Start a new chat or clear history.`,
+  chat_cost_hint: "≈ $0.02-0.05/turn, billed to your own Anthropic account",
+  chat_clear_history: "Clear this conversation",
+  chat_clear_confirm: "Clear chat history? This can't be undone.",
+  chat_empty_1on1: (mentorName) =>
+    `Conversation hasn't started. ${mentorName} will open with one sharp question — hit "Send" to let them speak.`,
+  chat_empty_group: "Panel hasn't convened. Hit \"Send\" to let all mentors weigh in on this idea.",
+  chat_role_you: "You",
+
+  clarify_btn: "Clarify →",
+  clarify_modal_title: (mentorName) => `${mentorName} has more questions`,
+  clarify_modal_intro:
+    "Answer these sharp questions and they'll re-score. The original evaluation stays for comparison.",
+  clarify_loading_questions: "Generating questions...",
+  clarify_submit: "Submit and re-score",
+  clarify_recomputing: "Re-evaluating...",
+  clarify_done: "Done. See the refined card below.",
+  clarify_refined_label: "After dialogue",
+  clarify_original_label: "Before dialogue",
+  clarify_score_diff: (delta) =>
+    delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : "no change",
+  clarify_answer_placeholder: "Be specific — names, times, numbers...",
+
+  group_speaker_label: (mentorName) => `${mentorName} is speaking`,
+  group_pass_msg: "(I have nothing to add this round.)",
+  group_mention_hint: "Use @ + name to call on a specific mentor",
 };
 
 export const STRINGS: Record<Lang, Strings> = { zh, en };

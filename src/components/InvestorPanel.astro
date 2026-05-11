@@ -11,9 +11,11 @@ interface Evaluation {
 
 interface Props {
   evaluations: Evaluation[];
+  /** Idea slug — required to wire "Talk to" / "Open panel" chat triggers. */
+  ideaId?: string;
 }
 
-const { evaluations } = Astro.props;
+const { evaluations, ideaId } = Astro.props;
 const lang = getLang(Astro.url);
 const s = STRINGS[lang];
 
@@ -125,6 +127,36 @@ const lgColsClass =
               <p class="font-body text-[13.5px] leading-[1.7] text-ink relative pl-3 border-l border-rule">
                 {evaluation.reasoning}
               </p>
+              {ideaId && (
+                <div class="mt-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em]">
+                  <button
+                    type="button"
+                    data-chat-trigger
+                    data-chat-mode="1on1"
+                    data-chat-idea={ideaId}
+                    data-chat-mentor={mentor.slug}
+                    data-chat-mentor-name={mentor.name}
+                    data-chat-mentor-initials={mentor.avatar_initials}
+                    data-chat-mentor-accent={mentor.accent}
+                    class="hover:text-seal transition-colors"
+                    style={`color: ${mentor.accent}`}
+                  >
+                    {s.chat_open_with(mentor.name)}
+                  </button>
+                  <span class="opacity-40">·</span>
+                  <button
+                    type="button"
+                    data-clarify-trigger
+                    data-chat-idea={ideaId}
+                    data-chat-mentor={mentor.slug}
+                    data-chat-mentor-name={mentor.name}
+                    data-chat-mentor-accent={mentor.accent}
+                    class="text-ink-soft hover:text-seal transition-colors"
+                  >
+                    {s.clarify_btn}
+                  </button>
+                </div>
+              )}
             </>
           ) : (
             <div class="mt-2 mb-3">

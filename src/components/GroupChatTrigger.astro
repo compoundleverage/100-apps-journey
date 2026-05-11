@@ -1,0 +1,35 @@
+---
+import { getCollection } from "astro:content";
+import { getLang, STRINGS } from "../lib/i18n";
+
+interface Props {
+  ideaId: string;
+}
+
+const { ideaId } = Astro.props;
+const lang = getLang(Astro.url);
+const s = STRINGS[lang];
+
+const mentorEntries = await getCollection("mentors");
+const roster = mentorEntries
+  .map((m) => ({
+    slug: m.id,
+    name: m.data.name,
+    avatar_initials: m.data.avatar_initials,
+    accent: m.data.accent,
+    sort_order: m.data.sort_order,
+  }))
+  .sort((a, b) => a.sort_order - b.sort_order)
+  .map(({ slug, name, avatar_initials, accent }) => ({ slug, name, avatar_initials, accent }));
+---
+
+<button
+  type="button"
+  data-chat-trigger
+  data-chat-mode="group"
+  data-chat-idea={ideaId}
+  data-chat-group-roster={JSON.stringify(roster)}
+  class="font-mono text-xs uppercase tracking-[0.18em] border border-seal text-seal px-5 py-3 hover:bg-seal hover:text-paper transition-colors"
+>
+  {s.chat_open_panel}
+</button>
