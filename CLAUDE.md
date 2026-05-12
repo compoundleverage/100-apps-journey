@@ -30,6 +30,9 @@ bun run evaluate --all --model=claude-haiku-4-5-20251001  # cheaper
 
 bun run validate-content           # cross-collection schema check (mentors ↔ ideas); chained into build
 bun run validate-sources           # source-reliability rubric check on mentor citations (on demand)
+
+bun run mentor:add                 # interactive v1-bootstrap mentor scaffolder (custom/fictional)
+bun run mentor:delete <slug>       # delete a mentor + cascade-clean idea evaluations
 ```
 
 OG images for `/`, every idea, and every mentor are generated at build time
@@ -103,6 +106,37 @@ To upgrade an existing v1-bootstrap mentor or forge a new one:
 ```
 ~$1-2 in API charges, 8-15 minutes execution + ~30 min of attention if you review checkpoints honestly.
 
+## Mentor catalog operations
+
+The catalog (`src/content/mentors/`) is managed entirely by the builder via CLI / Claude Code Skills. Three entry points, picked by operation type:
+
+| Need | Claude Code | Any agent / shell |
+|---|---|---|
+| Full distillation of a real public figure | `/persona-forge "<name>"` | — (LLM-heavy; CC-only) |
+| Quick scaffold of a custom / fictional persona (v1-bootstrap stub) | `/mentor-add` | `bun run mentor:add` |
+| Delete a mentor + cascade-clean idea evaluations | `/mentor-delete <slug>` | `bun run mentor:delete <slug>` |
+
+**Principle: core UI behaviors all have CLI equivalents.** Anything an authenticated builder can do through the UI (today: nothing — the UI is visitor-facing) MUST also be reachable via a bun script, so Codex / Cursor / plain shell can manage the catalog. The `/mentor-*` Skills are *thin wrappers* around the bun scripts: same logic, different ergonomics.
+
+Why this matters: Skills are **Claude Code-specific** — Codex et al. don't read `.claude/skills/*.md` and can't invoke CC's `Agent`/`Task` tools. CLI scripts are the universal fallback. `/persona-forge` is the one exception (its 6-agent distillation needs CC's parallel-agent dispatch and can't be ported to a bun script without a complete rewrite).
+
+The delete script writes idea files FIRST then removes the mentor dir — a mid-flight crash leaves a re-runnable state (mentor still present, partial cascade safely re-applied).
+
+## Visitor bench (seated mentors)
+
+Web visitors pick ≤4 mentors to "seat" on their personal bench. Selection lives in `localStorage` under key `seated:v1` (JSON array of slugs) and **filters** what they see — it does NOT mutate the catalog.
+
+Architecture:
+
+- **Source of truth**: `src/lib/seated.ts`. Exports `DEFAULT_SEATED_SLUGS` (builder's curated 4), `MAX_SEATS` (= 4), and SSR-safe helpers (`getSeatedSlugs`, `setSeatedSlugs`, `toggleSeat`, `filterSeated`, `resetSeats`). Dispatches `window` event `seated:changed` on writes so multi-component pages re-render in sync.
+- **First-visit experience**: builder hard-codes 4 default slugs in `DEFAULT_SEATED_SLUGS`. `validate-content.ts` Check 4 warns (yellow, non-blocking) if any of those slugs is missing from the catalog.
+- **Server still loads everything**: API and SSR always load the full catalog. Filtering happens in two places:
+  1. **Client**: `InvestorPanel.astro` script hides non-seated cards on hydrate; `/mentors` page splits cards into "Your bench" (seated) and "Available" (rest) and provides a `+ Seat` / `✕ Unseat` toggle on each.
+  2. **Server**: `/api/chat/group/<idea>` accepts an optional `mentors?: string[]` POST field; when present and non-empty, only those mentors participate in the round-table. Empty/missing falls back to the full catalog (defensive — never zero participants).
+- **Deleting a seated mentor**: `seated.ts`'s `filterSeated` silently drops unknown slugs; visitors get a smaller bench without errors. If a default-seated slug gets deleted, `bun run validate-content` flags it as a warning — builder should edit `DEFAULT_SEATED_SLUGS`.
+
+The cap (4) is intentional: more than ~4 mentors in a round-table dilutes each turn and inflates per-message latency. To change the cap, edit `MAX_SEATS` in one place.
+
 ## Batch parallelism rule (operational)
 
 **Independent operations should run in parallel by default.** When a batch task has no causal dependencies between items (e.g., multiple `/persona-forge` runs on different mentors), do NOT serialize them. Three patterns:
@@ -132,7 +166,9 @@ When a user request matches an available skill, invoke it via the Skill tool.
 - Ship / deploy / PR → `/ship` or `/land-and-deploy`
 - Save progress → `/context-save`
 - Resume → `/context-restore`
-- Forge a new mentor for the panel → `/persona-forge "<name>"`
+- Forge a new mentor for the panel (real public figure) → `/persona-forge "<name>"`
+- Scaffold a custom / fictional mentor → `/mentor-add` (or `bun run mentor:add`)
+- Delete a mentor + clean idea evaluations → `/mentor-delete <slug>` (or `bun run mentor:delete <slug>`)
 
 ## Disclaimer
 

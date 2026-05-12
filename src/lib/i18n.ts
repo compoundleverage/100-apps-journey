@@ -208,6 +208,17 @@ type Strings = {
   bench_distill_cost_review: string;
   bench_distill_pipeline_p1: string;
   bench_distill_pipeline_p2: string;
+  // Seat picker (visitor's "your bench" + "available" sections)
+  bench_your_section: string;
+  bench_seated_header: (seated: number, max: number) => string;
+  bench_seated_empty: string;
+  bench_available_section: string;
+  bench_available_subtitle: string;
+  bench_seat_action: string;
+  bench_unseat_action: string;
+  bench_seat_full_hint: (max: number) => string;
+  bench_seat_reset: string;
+  bench_seat_persisted_hint: string;
 
   // Mentor detail page
   mentor_page_title_suffix: string;
@@ -513,6 +524,16 @@ const zh: Strings = {
   bench_distill_pipeline_p1:
     "Pipeline 从公开来源（书、演讲、采访、社媒）蒸馏出 mental model、决策启发式和表达 DNA，每条来源按 4 维可靠性 rubric 评分。结果落到",
   bench_distill_pipeline_p2: "，新 mentor 自动加入评审团。中断后恢复用：",
+  bench_your_section: "你的圆桌",
+  bench_seated_header: (seated, max) => `席位 ${seated}/${max}`,
+  bench_seated_empty: "席位空着。从下面选最多 4 位上座。",
+  bench_available_section: "候补顾问",
+  bench_available_subtitle: "点「入席」加入你的圆桌（最多 4 位）。",
+  bench_seat_action: "+ 入席",
+  bench_unseat_action: "✕ 退席",
+  bench_seat_full_hint: (max) => `席位已满（${max}/${max}），先退一位再换`,
+  bench_seat_reset: "恢复默认席位",
+  bench_seat_persisted_hint: "席位选择保存在本地浏览器，不跨设备同步。",
 
   mentor_page_title_suffix: "· 顾问团 · 100 Apps Journey",
   mentor_advisor_label: "顾问",
@@ -833,6 +854,16 @@ const en: Strings = {
   bench_distill_pipeline_p1:
     "The pipeline distills mental models, decision heuristics, and expression DNA from public sources (books, talks, interviews, social) — each source scored against a 4-dimension reliability rubric. Results land in",
   bench_distill_pipeline_p2: "and the new mentor joins the panel automatically. Resume after interruption with:",
+  bench_your_section: "Your bench",
+  bench_seated_header: (seated, max) => `Bench ${seated}/${max}`,
+  bench_seated_empty: "No mentors seated yet. Pick up to 4 from below.",
+  bench_available_section: "Available mentors",
+  bench_available_subtitle: "Click “seat” to add to your bench (up to 4).",
+  bench_seat_action: "+ Seat",
+  bench_unseat_action: "✕ Unseat",
+  bench_seat_full_hint: (max) => `Bench full (${max}/${max}). Unseat one first.`,
+  bench_seat_reset: "Reset to defaults",
+  bench_seat_persisted_hint: "Selection lives in your browser only — no cross-device sync.",
 
   mentor_page_title_suffix: "· Bench · 100 Apps Journey",
   mentor_advisor_label: "Advisor",

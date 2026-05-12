@@ -2,6 +2,7 @@
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
 import { getLang, localizedHref, STRINGS } from "../../lib/i18n";
+import { MAX_SEATS } from "../../lib/seated";
 
 const mentorEntries = await getCollection("mentors");
 const mentors = mentorEntries
@@ -71,10 +72,62 @@ const s = STRINGS[lang];
             </div>
           </section>
 
-          <section>
-            {mentors.map((mentor) => (
-              <a href={localizedHref(`/mentors/${mentor.slug}`, lang)} class="block group">
-                <article class="border-b border-rule grid grid-cols-[auto_auto_1fr_auto] gap-4 sm:gap-8 items-baseline px-6 sm:px-10 py-6 sm:py-7 transition-colors duration-200 group-hover:bg-paper-soft">
+          <!-- "Your bench" — populated client-side from localStorage; server renders empty -->
+          <section class="border-b border-rule" data-bench-section="seated">
+            <div class="max-w-6xl mx-auto px-6 sm:px-10 pt-10 pb-2 flex items-baseline justify-between gap-4 flex-wrap">
+              <div>
+                <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal mb-2">
+                  {s.bench_your_section}
+                </p>
+                <p class="font-mono text-[11px] uppercase tracking-[0.2em] text-ink-soft" data-bench-seated-header>
+                  {s.bench_seated_header(0, MAX_SEATS)}
+                </p>
+              </div>
+              <button
+                type="button"
+                data-bench-reset
+                class="font-mono text-[10px] uppercase tracking-[0.2em] text-ink-soft hover:text-seal transition-colors underline-offset-4 hover:underline"
+              >
+                {s.bench_seat_reset}
+              </button>
+            </div>
+            <div data-bench-seated-list>
+              <!-- script moves seated mentor cards here -->
+            </div>
+            <p
+              class="max-w-6xl mx-auto px-6 sm:px-10 pb-6 font-body italic text-sm text-ink-soft"
+              data-bench-seated-empty
+              hidden
+            >
+              {s.bench_seated_empty}
+            </p>
+            <p class="max-w-6xl mx-auto px-6 sm:px-10 pb-6 font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft opacity-70">
+              {s.bench_seat_persisted_hint}
+            </p>
+          </section>
+
+          <!-- "Available mentors" — server renders all mentor cards here; script
+               moves seated ones up to "Your bench" on hydrate. -->
+          <section data-bench-section="available">
+            <div class="max-w-6xl mx-auto px-6 sm:px-10 pt-10 pb-3">
+              <p class="font-mono text-[10px] uppercase tracking-[0.3em] text-seal mb-2">
+                {s.bench_available_section}
+              </p>
+              <p class="font-body text-sm text-ink-soft">
+                {s.bench_available_subtitle}
+              </p>
+            </div>
+            <div data-bench-available-list>
+              {mentors.map((mentor) => (
+                <div
+                  class="border-b border-rule grid grid-cols-[auto_auto_1fr_auto] gap-4 sm:gap-8 items-baseline px-6 sm:px-10 py-6 sm:py-7 transition-colors hover:bg-paper-soft"
+                  data-mentor-card
+                  data-mentor-slug={mentor.slug}
+                  data-mentor-name={mentor.name}
+                  data-mentor-accent={mentor.accent}
+                  data-mentor-initials={mentor.avatar_initials}
+                  data-mentor-short-bio={mentor.short_bio}
+                >
                   <span
                     class="flex items-center justify-center w-9 h-9 rounded-full font-mono text-[11px] font-medium shrink-0 self-center"
                     style={`background-color: color-mix(in oklch, ${mentor.accent} 12%, transparent); color: ${mentor.accent};`}
@@ -91,9 +144,14 @@ const s = STRINGS[lang];
                   </span>
 
                   <div class="min-w-0">
-                    <h3 class="font-display text-lg sm:text-2xl font-medium tracking-tight leading-[1.15] text-ink group-hover:text-seal transition-colors duration-200">
-                      {mentor.name}
-                    </h3>
+                    <a
+                      href={localizedHref(`/mentors/${mentor.slug}`, lang)}
+                      class="inline-block group/name"
+                    >
+                      <h3 class="font-display text-lg sm:text-2xl font-medium tracking-tight leading-[1.15] text-ink group-hover/name:text-seal transition-colors duration-200">
+                        {mentor.name}
+                      </h3>
+                    </a>
                     <p class="font-body italic text-sm sm:text-base text-ink-soft leading-snug mt-1 max-w-3xl">
                       {mentor.short_bio}
                     </p>
@@ -121,17 +179,25 @@ const s = STRINGS[lang];
                     </div>
                   </div>
 
-                  <div class="hidden sm:flex flex-col items-end gap-1 shrink-0 self-center text-right">
-                    <span class="font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
+                  <div class="flex flex-col items-end gap-2 shrink-0 self-center text-right">
+                    <span class="hidden sm:inline-block font-mono text-[9px] uppercase tracking-[0.2em] text-ink-soft">
                       {mentor.version === "v2-distilled" ? s.bench_card_distilled : s.bench_card_bootstrap}
                     </span>
-                    <span class="font-mono text-[10px] tabular-nums text-ink-soft">
+                    <span class="hidden sm:inline-block font-mono text-[10px] tabular-nums text-ink-soft">
                       {mentor.research_date.toISOString().slice(0, 10)}
                     </span>
+                    <button
+                      type="button"
+                      data-seat-toggle
+                      class="font-mono text-[10px] uppercase tracking-[0.18em] py-1.5 px-3 border border-rule transition-colors hover:bg-seal/10 hover:text-seal disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-ink-soft"
+                      style={`color: ${mentor.accent}; border-color: color-mix(in oklch, ${mentor.accent} 30%, var(--color-rule));`}
+                    >
+                      {s.bench_seat_action}
+                    </button>
                   </div>
-                </article>
-              </a>
-            ))}
+                </div>
+              ))}
+            </div>
           </section>
         </>
       )
@@ -276,5 +342,102 @@ const s = STRINGS[lang];
         }
       });
     })();
+  </script>
+
+  <script>
+    import {
+      getSeatedSlugs,
+      toggleSeat,
+      resetSeats,
+      MAX_SEATS,
+    } from "../../lib/seated";
+    import { getLang, STRINGS } from "../../lib/i18n";
+
+    function render() {
+      const seated = getSeatedSlugs();
+      const seatedSet = new Set(seated);
+      const lang = getLang(new URL(window.location.href));
+      const s = STRINGS[lang];
+
+      const seatedList = document.querySelector<HTMLElement>("[data-bench-seated-list]");
+      const availableList = document.querySelector<HTMLElement>("[data-bench-available-list]");
+      const seatedHeader = document.querySelector<HTMLElement>("[data-bench-seated-header]");
+      const seatedEmpty = document.querySelector<HTMLElement>("[data-bench-seated-empty]");
+      if (!seatedList || !availableList) return;
+
+      // Gather all cards from both lists (cards may live in either after toggles)
+      const allCards = document.querySelectorAll<HTMLElement>("[data-mentor-card]");
+      const cardBySlug = new Map<string, HTMLElement>();
+      for (const card of allCards) {
+        const slug = card.dataset.mentorSlug ?? "";
+        if (slug) cardBySlug.set(slug, card);
+      }
+
+      // Move seated cards in order to seatedList; rest stay in availableList
+      // (any seated card currently in available gets moved up; vice versa).
+      for (const slug of seated) {
+        const card = cardBySlug.get(slug);
+        if (card) seatedList.appendChild(card);
+      }
+      // Any remaining cards (not in seated) belong in available
+      for (const [slug, card] of cardBySlug) {
+        if (!seatedSet.has(slug) && card.parentElement !== availableList) {
+          availableList.appendChild(card);
+        }
+      }
+
+      // Update header count
+      if (seatedHeader) {
+        seatedHeader.textContent = s.bench_seated_header(seated.length, MAX_SEATS);
+      }
+      if (seatedEmpty) {
+        seatedEmpty.hidden = seated.length > 0;
+      }
+
+      // Update each toggle button (label, disabled state)
+      const isFull = seated.length >= MAX_SEATS;
+      for (const [slug, card] of cardBySlug) {
+        const btn = card.querySelector<HTMLButtonElement>("[data-seat-toggle]");
+        if (!btn) continue;
+        const inSeated = seatedSet.has(slug);
+        btn.textContent = inSeated ? s.bench_unseat_action : s.bench_seat_action;
+        btn.disabled = !inSeated && isFull;
+        btn.title = btn.disabled ? s.bench_seat_full_hint(MAX_SEATS) : "";
+      }
+    }
+
+    function bindClicks() {
+      document.addEventListener("click", (e) => {
+        const target = e.target as HTMLElement | null;
+        if (!target) return;
+        const toggleBtn = target.closest<HTMLButtonElement>("[data-seat-toggle]");
+        if (toggleBtn && !toggleBtn.disabled) {
+          const card = toggleBtn.closest<HTMLElement>("[data-mentor-card]");
+          const slug = card?.dataset.mentorSlug;
+          if (slug) {
+            toggleSeat(slug);
+            render();
+          }
+          return;
+        }
+        const resetBtn = target.closest<HTMLElement>("[data-bench-reset]");
+        if (resetBtn) {
+          resetSeats();
+          render();
+        }
+      });
+    }
+
+    function init() {
+      bindClicks();
+      render();
+      window.addEventListener("seated:changed", render);
+    }
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", init);
+    } else {
+      init();
+    }
   </script>
 </Layout>

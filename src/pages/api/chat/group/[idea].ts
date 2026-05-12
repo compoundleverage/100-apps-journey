@@ -52,7 +52,7 @@ async function handle(
     return new Response("Missing or malformed X-User-Anthropic-Key header", { status: 401 });
   }
 
-  let body: { history?: ChatMessage[] };
+  let body: { history?: ChatMessage[]; mentors?: string[] };
   try {
     body = await request.json();
   } catch {
@@ -66,21 +66,37 @@ async function handle(
   const [allMentors, idea] = await Promise.all([loadAllMentors(), loadIdea(ideaId)]);
   if (!idea) return new Response(`No idea "${ideaId}"`, { status: 404 });
 
-  const mentorByName = new Map(allMentors.map((m) => [m.slug, m]));
+  // Visitor-side seated filter: if the client passes a non-empty mentors[]
+  // array, restrict the panel to that intersection. Empty / missing falls
+  // back to the full catalog so we never return zero participants.
+  let panel = allMentors;
+  if (Array.isArray(body.mentors) && body.mentors.length > 0) {
+    const requested = new Set(body.mentors);
+    const filtered = allMentors.filter((m) => requested.has(m.slug));
+    if (filtered.length > 0) {
+      panel = filtered;
+    } else {
+      console.warn(
+        `[chat/group] no seated mentors matched catalog (requested: ${body.mentors.join(",")}), falling back to full catalog`,
+      );
+    }
+  }
+
+  const mentorByName = new Map(panel.map((m) => [m.slug, m]));
   const ideaCtx = buildIdeaContext(idea);
   const client = new Anthropic({ apiKey });
 
   const hasMentorTurns = history.some((m) => m.role === "mentor");
 
   if (!hasMentorTurns) {
-    // OPENING PASS — every mentor weighs in. Stream them serially so the
-    // ordering is deterministic and the client sees one mentor finish before
-    // the next begins. Each gets `speaker` event + own delta stream.
-    return openingPassResponse(client, allMentors, ideaCtx, history, mentorByName);
+    // OPENING PASS — every seated mentor weighs in. Stream them serially so
+    // the ordering is deterministic and the client sees one mentor finish
+    // before the next begins. Each gets `speaker` event + own delta stream.
+    return openingPassResponse(client, panel, ideaCtx, history, mentorByName);
   }
 
-  // FOLLOW-UP: orchestrator picks who speaks next.
-  return followupTurnResponse(client, allMentors, ideaCtx, history, mentorByName);
+  // FOLLOW-UP: orchestrator picks who speaks next from the seated panel.
+  return followupTurnResponse(client, panel, ideaCtx, history, mentorByName);
 };
 
 function openingPassResponse(

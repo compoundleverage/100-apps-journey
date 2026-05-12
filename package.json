@@ -11,7 +11,9 @@
     "check": "astro check",
     "evaluate": "bun run scripts/evaluate.ts",
     "validate-content": "bun run scripts/validate-content.ts",
-    "validate-sources": "bun run scripts/validate-sources.ts"
+    "validate-sources": "bun run scripts/validate-sources.ts",
+    "mentor:add": "bun run scripts/mentor-add.ts",
+    "mentor:delete": "bun run scripts/mentor-delete.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.32.1",

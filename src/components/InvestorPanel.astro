@@ -1,6 +1,7 @@
 ---
 import { getCollection } from "astro:content";
 import { getLang, localizedHref, STRINGS } from "../lib/i18n";
+import { MAX_SEATS } from "../lib/seated";
 
 interface Evaluation {
   persona: string;
@@ -35,24 +36,17 @@ const ordered = mentors.map((mentor) => {
 
 const versionGlyph = (v: string) => (v === "v2-distilled" ? "●" : "◌");
 
-// Pick the column count for the grid based on mentor count.
-// Then compute how many empty placeholder seats to render so the grid never
-// shows a raw bg-rule cell at the end.
-const total = ordered.length;
-const lgCols = total <= 5 ? 5 : total === 6 ? 3 : total <= 8 ? 4 : total === 9 ? 3 : 4;
-const emptySeats = (lgCols - (total % lgCols)) % lgCols;
-const lgColsClass =
-  lgCols === 5
-    ? "lg:grid-cols-5"
-    : lgCols === 4
-      ? "lg:grid-cols-4"
-      : "lg:grid-cols-3";
+// Grid is fixed at up to MAX_SEATS columns (4). All catalog cards render
+// server-side; client script filters to the visitor's seated set and toggles
+// MAX_SEATS placeholder cards to fill the row.
+const placeholders = Array.from({ length: MAX_SEATS });
 ---
 
-<section class="space-y-6">
+<section class="space-y-6" data-investor-panel>
   <header class="border-b border-rule pb-3">
     <p
       class="font-mono text-[10px] uppercase tracking-[0.25em] text-ink-soft mb-1"
+      data-panel-count
     >
       {s.panel_header_count(mentors.length)}
     </p>
@@ -64,11 +58,16 @@ const lgColsClass =
   </header>
 
   <div
-    class={`grid grid-cols-1 sm:grid-cols-2 gap-px bg-rule ${lgColsClass}`}
+    class="grid grid-cols-1 sm:grid-cols-2 gap-px bg-rule lg:grid-cols-4"
+    data-panel-grid
   >
     {
       ordered.map(({ mentor, evaluation, isStale }) => (
-        <article class="relative bg-paper px-5 pt-7 pb-6 flex flex-col">
+        <article
+          class="relative bg-paper px-5 pt-7 pb-6 flex flex-col"
+          data-mentor-card
+          data-mentor-slug={mentor.slug}
+        >
           <div
             class="absolute top-0 left-0 right-0 h-[3px]"
             style={`background: ${mentor.accent}`}
@@ -160,10 +159,12 @@ const lgColsClass =
       ))
     }
     {
-      Array.from({ length: emptySeats }).map((_, i) => (
+      placeholders.map(() => (
         <article
           class="relative bg-paper px-5 pt-6 pb-6 flex flex-col"
           aria-hidden="true"
+          data-mentor-placeholder
+          hidden
         >
           <div
             class="absolute top-0 left-0 right-0 h-[3px] opacity-20"
@@ -195,7 +196,7 @@ const lgColsClass =
               href={localizedHref("/mentors", lang)}
               class="font-mono text-[11px] text-seal hover:text-ink transition-colors"
             >
-              /persona-forge
+              /mentors
             </a>
             {lang === "zh" ? "。" : "."}
           </p>
@@ -210,3 +211,60 @@ const lgColsClass =
     {s.panel_disclaimer_p1} {s.panel_disclaimer_p2}
   </p>
 </section>
+
+<script>
+  import { getSeatedSlugs, MAX_SEATS } from "../lib/seated";
+  import { getLang, STRINGS } from "../lib/i18n";
+
+  function applySeated() {
+    const seated = getSeatedSlugs();
+    const seatedSet = new Set(seated);
+    const panels = document.querySelectorAll<HTMLElement>("[data-investor-panel]");
+    if (panels.length === 0) return;
+
+    const lang = getLang(new URL(window.location.href));
+    const s = STRINGS[lang];
+
+    for (const panel of panels) {
+      const grid = panel.querySelector<HTMLElement>("[data-panel-grid]");
+      if (!grid) continue;
+
+      const cards = grid.querySelectorAll<HTMLElement>("[data-mentor-card]");
+      const seatedCardsBySlug = new Map<string, HTMLElement>();
+      let seatedVisible = 0;
+      for (const card of cards) {
+        const slug = card.dataset.mentorSlug ?? "";
+        if (seatedSet.has(slug)) {
+          card.hidden = false;
+          seatedCardsBySlug.set(slug, card);
+          seatedVisible++;
+        } else {
+          card.hidden = true;
+        }
+      }
+
+      // Reorder seated cards to match the seated array order.
+      for (const slug of seated) {
+        const card = seatedCardsBySlug.get(slug);
+        if (card) grid.appendChild(card);
+      }
+
+      const placeholders = grid.querySelectorAll<HTMLElement>("[data-mentor-placeholder]");
+      const emptyCount = Math.max(0, MAX_SEATS - seatedVisible);
+      placeholders.forEach((el, i) => {
+        el.hidden = i >= emptyCount;
+        if (!el.hidden) grid.appendChild(el);
+      });
+
+      const count = panel.querySelector<HTMLElement>("[data-panel-count]");
+      if (count) count.textContent = s.panel_header_count(seatedVisible);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", applySeated);
+  } else {
+    applySeated();
+  }
+  window.addEventListener("seated:changed", applySeated);
+</script>

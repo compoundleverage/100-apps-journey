@@ -26,6 +26,7 @@ import {
 import type { ChatMessage, ChatMode } from "./types";
 import { getLang, STRINGS } from "../i18n";
 import { attachRefinedCard } from "./clarify";
+import { getSeatedSlugs, filterSeated } from "../seated";
 
 interface MentorMeta {
   slug: string;
@@ -142,6 +143,14 @@ export class ChatDrawerController {
       } catch {
         /* ignore */
       }
+    }
+    // Group mode: filter the catalog roster down to the visitor's seated set.
+    // Fall back to full roster if nothing seated (avoids empty panel deadlock).
+    if (mode === "group" && groupMentors && groupMentors.length > 0) {
+      const seated = getSeatedSlugs();
+      const filtered = filterSeated(groupMentors, seated);
+      if (filtered.length > 0) groupMentors = filtered;
+      else console.warn("[chat] no seated mentors found, opening with full catalog");
     }
     this.open({ mode, ideaId, mentor, mentorMeta, groupMentors });
   }
@@ -330,7 +339,13 @@ export class ChatDrawerController {
           ? `/api/chat/1on1/${this.current.mentor}`
           : `/api/chat/group/${this.current.ideaId}`;
       const history = loadSession(id)?.messages ?? [];
-      console.log("[chat] sending", { endpoint, historyLen: history.length });
+      // Group mode: tell the server which mentors are seated so it only
+      // streams turns from them. 1on1 doesn't need this (slug is in URL).
+      const extras =
+        this.current.mode === "group" && this.current.groupMentors
+          ? { mentors: this.current.groupMentors.map((m) => m.slug) }
+          : undefined;
+      console.log("[chat] sending", { endpoint, historyLen: history.length, extras });
 
       // For group: server may emit multiple `done` events with `speaker`
       // (one per mentor in the opening pass). Each one commits the current
@@ -341,6 +356,7 @@ export class ChatDrawerController {
         ideaId: this.current.ideaId,
         mentor: this.current.mentor,
         history,
+        extras,
         signal: this.abortCtl.signal,
       })) {
         if (ev.type === "delta") {

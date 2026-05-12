@@ -10,6 +10,9 @@
  *   2. Every evaluation's `mentor_version` should match the mentor's current
  *      `version`. Mismatch = warning (suggest re-running evaluate).
  *   3. Every mentor must have a non-empty `system_prompt` in frontmatter.
+ *   4. Every slug in DEFAULT_SEATED_SLUGS (src/lib/seated.ts) must exist as a
+ *      mentor. Missing → warning (visitors silently drop unknown slugs, but
+ *      builder should update the constant).
  *
  * Exit 1 on any ERROR; warnings print but don't fail the build.
  */
@@ -17,6 +20,7 @@
 import matter from "gray-matter";
 import { readdir, readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { DEFAULT_SEATED_SLUGS } from "../src/lib/seated";
 
 const IDEAS_DIR = "src/content/ideas";
 const MENTORS_DIR = "src/content/mentors";
@@ -95,6 +99,15 @@ async function main() {
     if (!m.system_prompt || m.system_prompt.trim().length < 50) {
       errors.push(
         `mentor "${m.slug}" has missing or trivial system_prompt frontmatter (length ${m.system_prompt.length})`,
+      );
+    }
+  }
+
+  // Check 4: default seated mentors must exist in catalog
+  for (const slug of DEFAULT_SEATED_SLUGS) {
+    if (!mentorMap.has(slug)) {
+      warnings.push(
+        `DEFAULT_SEATED_SLUGS in src/lib/seated.ts references "${slug}" — no such mentor in ${MENTORS_DIR}/. Visitors will silently drop it; edit the constant to fix.`,
       );
     }
   }
