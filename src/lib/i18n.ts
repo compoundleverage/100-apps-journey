@@ -219,6 +219,10 @@ type Strings = {
   bench_seat_full_hint: (max: number) => string;
   bench_seat_reset: string;
   bench_seat_persisted_hint: string;
+  // Inline panel swap (on idea pages)
+  panel_unseat_title: (name: string) => string;
+  panel_pick_mentor_label: string;
+  panel_pick_mentor_empty: string;
 
   // Mentor detail page
   mentor_page_title_suffix: string;
@@ -534,6 +538,9 @@ const zh: Strings = {
   bench_seat_full_hint: (max) => `席位已满（${max}/${max}），先退一位再换`,
   bench_seat_reset: "恢复默认席位",
   bench_seat_persisted_hint: "席位选择保存在本地浏览器，不跨设备同步。",
+  panel_unseat_title: (name) => `把 ${name} 请下席`,
+  panel_pick_mentor_label: "选一位上座",
+  panel_pick_mentor_empty: "其余 mentor 都在席。",
 
   mentor_page_title_suffix: "· 顾问团 · 100 Apps Journey",
   mentor_advisor_label: "顾问",
@@ -864,6 +871,9 @@ const en: Strings = {
   bench_seat_full_hint: (max) => `Bench full (${max}/${max}). Unseat one first.`,
   bench_seat_reset: "Reset to defaults",
   bench_seat_persisted_hint: "Selection lives in your browser only — no cross-device sync.",
+  panel_unseat_title: (name) => `Unseat ${name}`,
+  panel_pick_mentor_label: "Pick a mentor",
+  panel_pick_mentor_empty: "All mentors are already seated.",
 
   mentor_page_title_suffix: "· Bench · 100 Apps Journey",
   mentor_advisor_label: "Advisor",

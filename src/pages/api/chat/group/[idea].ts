@@ -112,19 +112,31 @@ function openingPassResponse(
   const stream = new ReadableStream({
     async start(controller) {
       try {
-        for (const mentor of mentors) {
-          // Announce the speaker
-          controller.enqueue(encodeNDJSON({ type: "delta", text: "" })); // ensure flushing buffer
-          // We use a custom intermediate "speaker" hint: we send a `done`-style
-          // event WITHOUT closing, then a separate stream for that mentor's text.
-          // To keep the wire format simple, use {type:"delta", text:""} as a no-op;
-          // the speaker attribution happens via the trailing {type:"done", speaker}.
+        // Accumulate panel turns serially so each mentor SEES the prior
+        // panelists' takes via toAnthropicMessages (other mentors' messages
+        // get prefixed with "[Name]:" and routed as user-role context).
+        // This is what makes the round-table a discussion instead of N
+        // parallel evaluations.
+        const runningHistory: ChatMessage[] = [...history];
+
+        for (let i = 0; i < mentors.length; i++) {
+          const mentor = mentors[i];
+          const isOpener = i === 0;
+
+          // Flush buffer hint
+          controller.enqueue(encodeNDJSON({ type: "delta", text: "" }));
 
           const sysPrompt = composeChatSystemPrompt(mentor, "group");
-          const msgs = toAnthropicMessages(history, mentor, "group", mentorByName);
-          const userTurn = userIntro
-            ? `${ideaCtx}\n\n---\n\nThe proposer's framing: ${userIntro}\n\nGive YOUR opening take in ≤ 4 sentences. Use ONE forcing question.`
-            : `${ideaCtx}\n\n---\n\nGive YOUR opening take on this idea in ≤ 4 sentences. Pick the dimension where you have the most doubt and ask ONE forcing question.`;
+          const msgs = toAnthropicMessages(runningHistory, mentor, "group", mentorByName);
+
+          const priorNames = runningHistory
+            .filter((m) => m.role === "mentor" && m.mentor)
+            .map((m) => mentorByName.get(m.mentor!)?.name)
+            .filter(Boolean) as string[];
+
+          const userTurn = isOpener
+            ? `${ideaCtx}\n\n---\n\n${userIntro ? `The proposer just framed it: "${userIntro}"\n\n` : ""}You are OPENING a live panel discussion — not a parallel evaluation, not a written memo. The other panelists will respond AFTER you, and they'll be watching what you say.\n\nIn 2–3 sentences, your authentic voice:\n• Stake out the angle where you have the MOST doubt about this idea.\n• Frame it as a sharp, specific question to the proposer — not a generic "what's the user need" but the one question you'd ask in person.\n\nSet the tone. This is Shark Tank, not a focus group.`
+            : `${ideaCtx}\n\n---\n\nLive panel discussion in progress. Prior speakers in order: ${priorNames.join(", ")}. Their turns are above (prefixed with [Name]:).\n\nYou speak NEXT. Two to four sentences in your authentic voice. You MUST:\n• Reference at least one prior panelist BY NAME — agree with their angle and extend it from your lens, push back on what they're missing, or escalate the challenge. Do NOT recite or echo them.\n• Add YOUR distinct angle (the one only you see — not a duplicate of what's been said).\n• End by throwing a sharp question — either to the proposer OR back to one of the panelists by name.\n\nThis is a real-time discussion. DO NOT recite a static evaluation. Engage. Disagree. Build. Challenge.`;
 
           const apiStream = await client.messages.stream({
             model: MODEL,
@@ -140,10 +152,18 @@ function openingPassResponse(
               controller.enqueue(encodeNDJSON({ type: "delta", text: ev.delta.text }));
             }
           }
-          // Speaker attribution — closes this mentor's turn
+          // Speaker attribution — closes this mentor's turn on the client.
           controller.enqueue(encodeNDJSON({ type: "done", speaker: mentor.slug }));
-          // Reset client-side: a small no-op will tell the client to start a new mentor stub
-          // (the client uses the `done` event with `speaker` as the trigger to commit + open new stub)
+
+          // Feed this turn into runningHistory so the NEXT mentor sees it.
+          if (buffer.trim()) {
+            runningHistory.push({
+              role: "mentor",
+              mentor: mentor.slug,
+              text: buffer,
+              ts: new Date().toISOString(),
+            });
+          }
         }
         // Final close marker after all mentors
         controller.enqueue(encodeNDJSON({ type: "done" }));
@@ -188,6 +208,21 @@ async function followupTurnResponse(
   const sysPrompt = composeChatSystemPrompt(chosen, "group");
   const msgs = toAnthropicMessages(history, chosen, "group", mentorByName);
 
+  // Names of OTHER panelists who've spoken (so the prompt can encourage
+  // engagement-by-name rather than monologue).
+  const otherSpeakerNames = Array.from(
+    new Set(
+      history
+        .filter((m) => m.role === "mentor" && m.mentor && m.mentor !== chosen!.slug)
+        .map((m) => mentorByName.get(m.mentor!)?.name)
+        .filter(Boolean) as string[],
+    ),
+  );
+  const refClause =
+    otherSpeakerNames.length > 0
+      ? `Other panelists in the room: ${otherSpeakerNames.join(", ")}. Reference at least ONE of them by name — agree-and-extend, push back, or throw a question back to them.`
+      : `You're the first mentor to follow the proposer's reply — set the tone.`;
+
   const stream = new ReadableStream({
     async start(controller) {
       try {
@@ -201,8 +236,7 @@ async function followupTurnResponse(
             // Final nudge prompting THIS mentor to speak based on the room state
             {
               role: "user" as const,
-              content:
-                "It's your turn in the panel discussion. Build on, push back against, or correct what's been said — but only from YOUR distinct lens. Two to four sentences. End with a question or a forced choice for the proposer.",
+              content: `It's your turn in the live panel discussion. ${refClause}\n\nTwo to four sentences in your authentic voice. Build on, push back, or correct — but ONLY from YOUR distinct lens. Do NOT recite a static evaluation. End with a sharp question for the proposer OR a challenge thrown back to a panelist by name. No corporate hedging.`,
             },
           ],
         });
