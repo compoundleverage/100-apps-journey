@@ -282,12 +282,18 @@ export class ChatDrawerController {
     let buffer = "";
     let currentStub: HTMLElement | null = stubEl;
     let currentTextEl: HTMLElement | null = textEl;
+    /** True once we've shown SOMETHING (delta text or an error) — prevents
+     *  the cleanup pass from yanking the stub away when the user actually
+     *  needs to see what happened. */
+    let hadVisibleContent = false;
     try {
       const endpoint =
         this.current.mode === "1on1"
           ? `/api/chat/1on1/${this.current.mentor}`
           : `/api/chat/group/${this.current.ideaId}`;
       const history = loadSession(id)?.messages ?? [];
+      console.log("[chat] sending", { endpoint, historyLen: history.length });
+
       // For group: server may emit multiple `done` events with `speaker`
       // (one per mentor in the opening pass). Each one commits the current
       // buffer + opens a fresh stub for the next mentor's deltas.
@@ -313,6 +319,7 @@ export class ChatDrawerController {
           }
           if (!ev.text) continue; // server flush sentinel
           buffer += ev.text;
+          hadVisibleContent = true;
           if (currentTextEl) currentTextEl.textContent = buffer;
           this.threadEl.scrollTop = this.threadEl.scrollHeight;
         } else if (ev.type === "done") {
@@ -346,18 +353,54 @@ export class ChatDrawerController {
             }
           }
         } else if (ev.type === "error") {
+          // Render the error inline in the current stub AND mark it visible
+          // so the cleanup pass below doesn't remove it.
+          hadVisibleContent = true;
+          console.error("[chat] server error event:", ev.message);
+          if (!currentStub) {
+            // Group case: error before any delta of a fresh turn — make a
+            // dedicated error stub so it can't get lost.
+            const fresh: ChatMessage = {
+              role: "mentor",
+              mentor: stubMentor,
+              text: "",
+              ts: new Date().toISOString(),
+            };
+            currentStub = this.appendMessageDOM(fresh, true);
+            currentTextEl = currentStub.querySelector(".chat-stream-target") as HTMLElement;
+          }
           if (currentTextEl) {
             currentTextEl.textContent = `${this.s.chat_error_prefix}${ev.message}`;
-            currentTextEl.classList.add("text-killed");
+            currentTextEl.style.color = "var(--color-killed)";
           }
         }
       }
-      // If we exited the loop with an orphaned stub (no deltas arrived), remove it.
-      if (currentStub && !buffer) currentStub.remove();
+      // Only remove the stub if NOTHING got rendered into it (orphan stub
+      // from a server stream that closed without sending anything).
+      if (currentStub && !hadVisibleContent) {
+        console.warn("[chat] stream closed with no content — removing orphan stub");
+        currentStub.remove();
+        // Surface a generic error in the thread so the user knows something
+        // went wrong instead of seeing the empty placeholder reappear.
+        const errEl = document.createElement("div");
+        errEl.className = "px-5 py-4 border-b border-rule";
+        errEl.innerHTML = `<p class="font-body text-sm" style="color: var(--color-killed);">${escapeHtml(
+          this.s.chat_error_prefix,
+        )}stream closed with no response from server (check console + your API key)</p>`;
+        this.threadEl.appendChild(errEl);
+      }
     } catch (e) {
+      console.error("[chat] send threw:", e);
       if (currentTextEl) {
         currentTextEl.textContent = `${this.s.chat_error_prefix}${String(e)}`;
-        currentTextEl.classList.add("text-killed");
+        currentTextEl.style.color = "var(--color-killed)";
+      } else {
+        const errEl = document.createElement("div");
+        errEl.className = "px-5 py-4 border-b border-rule";
+        errEl.innerHTML = `<p class="font-body text-sm" style="color: var(--color-killed);">${escapeHtml(
+          this.s.chat_error_prefix,
+        )}${escapeHtml(String(e))}</p>`;
+        this.threadEl.appendChild(errEl);
       }
     } finally {
       this.inFlight = false;

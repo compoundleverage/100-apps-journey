@@ -1,0 +1,68 @@
+---
+/**
+ * Renders a small "as of <today>" callout with live counts pulled from
+ * the actual collections. Use on meta/index ideas where the body would
+ * otherwise go stale ("AI 模拟 6 位真实人物" was outdated within a week).
+ *
+ * Render position is up to the caller. Designed for the top of the idea
+ * detail body section.
+ */
+import { getCollection } from "astro:content";
+import { getLang, STRINGS } from "../lib/i18n";
+
+const lang = getLang(Astro.url);
+
+const [mentors, ideas] = await Promise.all([
+  getCollection("mentors"),
+  getCollection("ideas"),
+]);
+
+const benchTotal = mentors.length;
+const distilled = mentors.filter((m) => m.data.version === "v2-distilled").length;
+const bootstrap = benchTotal - distilled;
+
+const ideasTotal = ideas.length;
+const shipped = ideas.filter((i) => i.data.status === "shipped").length;
+const building = ideas.filter((i) => i.data.status === "building").length;
+const killed = ideas.filter((i) => i.data.status === "killed").length;
+
+const today = new Date().toISOString().slice(0, 10);
+
+const labels = lang === "zh"
+  ? {
+      asOf: "Live state · 截至",
+      bench: (n: number, d: number, b: number) =>
+        b === 0
+          ? `顾问团 ${n} 位（全部完整蒸馏 ●）`
+          : `顾问团 ${n} 位（${d} 完整蒸馏 ● + ${b} 草稿态 ◌）`,
+      modes: "对话模式：Clarify / 单聊 / 圆桌（BYOK，访客填自己的 API key）",
+      pipeline: (t: number, s: number, b: number, k: number) =>
+        `Pipeline：${t} 个 idea · ${s} 已上线 · ${b} 在做 · ${k} 已撤`,
+      hint: "↑ 这一段由实时数据生成，bench 增减或 idea 状态变化时自动更新。",
+    }
+  : {
+      asOf: "Live state · as of",
+      bench: (n: number, d: number, b: number) =>
+        b === 0
+          ? `Bench: ${n} mentors (all fully distilled ●)`
+          : `Bench: ${n} mentors (${d} distilled ● + ${b} draft ◌)`,
+      modes: "Chat modes: Clarify / 1-on-1 / Group panel (BYOK — visitors use their own API key)",
+      pipeline: (t: number, s: number, b: number, k: number) =>
+        `Pipeline: ${t} ideas · ${s} shipped · ${b} building · ${k} killed`,
+      hint: "↑ this block is generated live from the collections — auto-updates as the bench grows or idea statuses change.",
+    };
+---
+
+<aside class="border border-rule bg-paper-soft px-5 py-4 my-6 not-prose">
+  <p class="font-mono text-[10px] uppercase tracking-[0.22em] text-seal mb-2">
+    {labels.asOf} <time datetime={today}>{today}</time>
+  </p>
+  <ul class="font-body text-sm text-ink space-y-1">
+    <li>{labels.bench(benchTotal, distilled, bootstrap)}</li>
+    <li>{labels.modes}</li>
+    <li>{labels.pipeline(ideasTotal, shipped, building, killed)}</li>
+  </ul>
+  <p class="font-mono italic text-[10px] text-ink-soft mt-2 leading-relaxed">
+    {labels.hint}
+  </p>
+</aside>

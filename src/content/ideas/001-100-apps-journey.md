@@ -6,9 +6,10 @@ date_added: 2026-05-10T00:00:00.000Z
 date_started: 2026-05-10T00:00:00.000Z
 date_shipped: 2026-05-10T00:00:00.000Z
 thesis: >-
-  做一个 idea tracker 没差异化，但做一个公开的 100 天 build-in-public 日志，把 angel investor
-  的评判落到产品里——AI 模拟 6 位真实人物（含 v2-distilled 的 Steve
-  Jobs）逐个评分——叙事张力和工具价值就能合一。Journey 本身就是 content。
+  做一个 idea tracker 没差异化；做一个公开的 100 天 build-in-public
+  日志，把 angel investor
+  的评判落到产品里——AI 模拟的真人投资人逐个评分，访客可以直接和顾问团对话（Clarify / 单聊 /
+  圆桌讨论）——叙事张力和工具价值就能合一。Journey 本身就是 content。
 kill_criteria: 如果当天 ship 不出本地可跑的 v1，重新评估方法论；如果四周后 ideas 列表少于 20 个，说明 100-app 节奏立不住，撤退。
 time_budget: 1d
 actual_time: 1d
@@ -324,9 +325,19 @@ investor_evaluations:
 
 ## 差异化的核心：panel of investors
 
-6 位真实人物的 AI 模拟分别评分（Karpathy / Musk / Garry Tan / Naval / PG，加上 v2-distilled 的 Steve Jobs——通过本项目内置的 `/persona-forge` skill 经 6-agent 调研 + 三重验证 + 质量 gate 蒸馏出来）。和 archetype 方案不同——他们不分工，每人按自己真实风格综合判断。重叠和分歧本身就是看点。
+每个 idea 由顾问团（一组 AI 模拟的真人投资人）分别评分。每位通过本项目内置的 `/persona-forge` skill 经 6-agent 调研 + 三重验证 + 质量 gate 蒸馏出来。和 archetype 方案不同——他们不分工，每人按自己真实风格综合判断。重叠和分歧本身就是看点。
 
-每张评分卡明确标注 "AI simulation"，footer 加 disclaimer。
+页面顶部有当前顾问团的实时统计（人数、版本分布）；mentors 收录在 `src/content/mentors/` 下，扩张时这里的数字自动跟新。
+
+## 不只是评分，能直接对话
+
+后续迭代加了三种交互模式：
+
+- **Clarify**：mentor 打完分后，可以让 Ta 反过来问 1-3 个尖锐问题，回答后重新评分。
+- **单聊（1-on-1）**：和某位 mentor 私下展开对话，他/她会用自己的 mental model 押你。
+- **圆桌（Group）**：所有 mentor 同时入场。先各说一句，后续由"谁不同意谁接话"的 orchestrator 决定下一个发言人。
+
+对话功能 BYOK——访客填自己的 Anthropic API key，本站不替访客出 API 钱。Key 仅存浏览器 localStorage，本服务器不记日志。
 
 ## 用户可以加自己的 mentor
 
@@ -336,4 +347,6 @@ investor_evaluations:
 
 Thesis 里的赌注是：在 2026 年 AI 编程时代，生产效率不再是瓶颈，**叙事和分发**才是。一个工具如果同时是 narrative artifact，复利就高。
 
-今天作为 Day 1 ship，背后有大量并行 agent 工作（plan / 6 reviewer / 6 research agent / 3 validator / frontend skill）。这本身是 100-app 节奏的存在性证明——一个有真实差异化的 app 一天内可以从想法到上线。
+Day 1 ship 当晚，背后是大量并行 agent 工作（plan / 6 reviewer / 6 research agent / 3 validator / frontend skill）。这本身是 100-app 节奏的存在性证明——一个有真实差异化的 app 一天内可以从想法到上线。
+
+后续 Day N 的迭代（i18n / 评分 workflow / OG image / 三种 chat 模式 / SSR 切换）都按"问题 → plan → 实施 → push"节奏来；本页 thesis 写得 evergreen，具体数字交给下面的 Live State 自动更新。
