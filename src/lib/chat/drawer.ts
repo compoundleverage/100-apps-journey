@@ -25,6 +25,7 @@ import {
 } from "./storage";
 import type { ChatMessage, ChatMode } from "./types";
 import { getLang, STRINGS } from "../i18n";
+import { attachRefinedCard } from "./clarify";
 
 interface MentorMeta {
   slug: string;
@@ -59,6 +60,11 @@ export class ChatDrawerController {
   private modal: HTMLElement;
   private modalDismiss: HTMLElement;
 
+  private rescoreRow: HTMLElement;
+  private rescoreBtn: HTMLButtonElement;
+  private rescoreStatus: HTMLElement;
+  private rescoreInFlight = false;
+
   private s = STRINGS[getLang(new URL(window.location.href))];
 
   constructor() {
@@ -75,6 +81,10 @@ export class ChatDrawerController {
     this.modal = document.getElementById("api-key-modal")!;
     this.modalDismiss = document.getElementById("api-key-modal-dismiss")!;
 
+    this.rescoreRow = document.getElementById("chat-rescore-row")!;
+    this.rescoreBtn = document.getElementById("chat-rescore") as HTMLButtonElement;
+    this.rescoreStatus = document.getElementById("chat-rescore-status")!;
+
     this.bind();
   }
 
@@ -90,6 +100,7 @@ export class ChatDrawerController {
         this.send();
       }
     });
+    this.rescoreBtn.addEventListener("click", () => this.rescore());
 
     // Bind all triggers on the page.
     document.querySelectorAll<HTMLElement>("[data-chat-trigger]").forEach((el) => {
@@ -165,12 +176,39 @@ export class ChatDrawerController {
     }
     // Render history
     this.renderThread();
+    // Rescore row: only meaningful for 1-on-1 (group has multiple speakers
+    // so "let THIS mentor re-score" doesn't apply).
+    if (args.mode === "1on1") {
+      this.rescoreRow.classList.remove("hidden");
+      this.rescoreRow.classList.add("flex");
+    } else {
+      this.rescoreRow.classList.add("hidden");
+      this.rescoreRow.classList.remove("flex");
+    }
+    this.refreshRescoreState();
     // Show
     this.root.classList.remove("translate-x-full");
     this.root.classList.add("translate-x-0");
     this.root.setAttribute("aria-hidden", "false");
     document.body.classList.add("overflow-hidden");
     setTimeout(() => this.composerEl.focus(), 200);
+  }
+
+  /** Enable rescore button only when there's at least one mentor turn in
+   *  the session — re-scoring with no conversation has nothing to anchor on. */
+  private refreshRescoreState() {
+    if (!this.current || this.current.mode !== "1on1") {
+      this.rescoreBtn.disabled = true;
+      return;
+    }
+    const id = this.currentSessionId();
+    if (!id) {
+      this.rescoreBtn.disabled = true;
+      return;
+    }
+    const session = loadSession(id);
+    const hasMentorTurn = !!session?.messages.some((m) => m.role === "mentor");
+    this.rescoreBtn.disabled = !hasMentorTurn || this.rescoreInFlight;
   }
 
   close() {
@@ -407,6 +445,86 @@ export class ChatDrawerController {
       this.sendBtn.disabled = false;
       this.sendBtn.textContent = this.s.chat_send;
       this.abortCtl = null;
+      this.refreshRescoreState();
+    }
+  }
+
+  /** "Ask for fresh score" — sends current chat history + original score
+   *  to /api/chat/clarify/<mentor>, attaches the refined card on the
+   *  underlying page when the response lands. */
+  private async rescore() {
+    if (this.rescoreInFlight || !this.current) return;
+    if (this.current.mode !== "1on1" || !this.current.mentor || !this.current.mentorMeta) return;
+
+    const apiKey = getApiKey();
+    if (!apiKey) {
+      this.showKeyModal();
+      return;
+    }
+    const id = this.currentSessionId();
+    if (!id) return;
+    const session = loadSession(id);
+    const history = session?.messages ?? [];
+    if (!history.some((m) => m.role === "mentor")) {
+      this.rescoreStatus.textContent = this.s.rescore_btn_disabled_hint;
+      this.rescoreStatus.style.color = "var(--color-ink-soft)";
+      return;
+    }
+
+    // Pull the original score+reasoning off the underlying page so the
+    // mentor has the prior anchor in their rescore prompt.
+    let original: { score: number; reasoning: string } | undefined;
+    const trigger = document.querySelector<HTMLElement>(
+      `[data-chat-trigger][data-chat-mode="1on1"][data-chat-mentor="${this.current.mentor}"]`,
+    );
+    const card = trigger?.closest("article");
+    if (card) {
+      const scoreEl = card.querySelector(".font-display[style*='color']");
+      const rawScore = scoreEl?.textContent?.trim();
+      const score = rawScore ? parseInt(rawScore, 10) : NaN;
+      const reasoningEl = card.querySelector("p.font-body.text-\\[13\\.5px\\]");
+      const reasoning = reasoningEl?.textContent?.trim() ?? "";
+      if (Number.isFinite(score) && reasoning) {
+        original = { score, reasoning };
+      }
+    }
+
+    this.rescoreInFlight = true;
+    this.rescoreBtn.disabled = true;
+    this.rescoreStatus.style.color = "var(--color-ink-soft)";
+    this.rescoreStatus.textContent = this.s.rescore_loading;
+
+    try {
+      const res = await fetch(`/api/chat/clarify/${this.current.mentor}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", "X-User-Anthropic-Key": apiKey },
+        body: JSON.stringify({ ideaId: this.current.ideaId, history, original }),
+      });
+      if (!res.ok) {
+        const text = (await res.text()) || `HTTP ${res.status}`;
+        throw new Error(text.slice(0, 300));
+      }
+      const refined = (await res.json()) as {
+        score: number;
+        reasoning: string;
+        dimensions?: Array<{ name: string; verdict: "pass" | "fail" | "unclear"; note: string }>;
+        refined_at: string;
+      };
+      const accent = this.current.mentorMeta.accent;
+      attachRefinedCard(
+        { ...refined, mentor: this.current.mentor, ideaId: this.current.ideaId },
+        accent,
+      );
+      const delta = original ? refined.score - original.score : 0;
+      this.rescoreStatus.style.color = "var(--color-seal)";
+      this.rescoreStatus.textContent = this.s.rescore_done(delta);
+    } catch (e) {
+      console.error("[chat] rescore failed:", e);
+      this.rescoreStatus.style.color = "var(--color-killed)";
+      this.rescoreStatus.textContent = this.s.rescore_failed(String(e));
+    } finally {
+      this.rescoreInFlight = false;
+      this.refreshRescoreState();
     }
   }
 
@@ -461,6 +579,8 @@ export class ChatDrawerController {
     if (!id) return;
     clearSession(id);
     this.renderThread();
+    this.rescoreStatus.textContent = "";
+    this.refreshRescoreState();
   }
 
   private showKeyModal() {

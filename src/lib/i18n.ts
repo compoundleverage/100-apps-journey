@@ -306,18 +306,17 @@ type Strings = {
   chat_empty_group: string;
   chat_role_you: string;
 
-  // Clarify modal
-  clarify_btn: string;
-  clarify_modal_title: (mentorName: string) => string;
-  clarify_modal_intro: string;
-  clarify_loading_questions: string;
-  clarify_submit: string;
-  clarify_recomputing: string;
-  clarify_done: string;
+  // Refined evaluation card (rendered after rescore-from-chat)
   clarify_refined_label: string;
   clarify_original_label: string;
   clarify_score_diff: (delta: number) => string;
-  clarify_answer_placeholder: string;
+
+  // Rescore-from-chat (button inside ChatDrawer)
+  rescore_btn: string;
+  rescore_btn_disabled_hint: string;
+  rescore_loading: string;
+  rescore_done: (delta: number) => string;
+  rescore_failed: (msg: string) => string;
 
   // Group orchestrator UX
   group_speaker_label: (mentorName: string) => string;
@@ -616,19 +615,21 @@ const zh: Strings = {
   chat_empty_group: "圆桌还没开。按 \"发送\" 让所有顾问对这个 idea 各说一句。",
   chat_role_you: "你",
 
-  clarify_btn: "Clarify →",
-  clarify_modal_title: (mentorName) => `${mentorName} 还想问几个问题`,
-  clarify_modal_intro:
-    "回答这几个尖锐的问题，他会重新评分。原评分会保留作为对照。",
-  clarify_loading_questions: "正在生成问题...",
-  clarify_submit: "提交并重新评分",
-  clarify_recomputing: "正在重新评估...",
-  clarify_done: "完成。看下面 refined 卡。",
   clarify_refined_label: "对话后",
   clarify_original_label: "对话前",
   clarify_score_diff: (delta) =>
     delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : "持平",
-  clarify_answer_placeholder: "尽量具体——给名字、给时间、给数字...",
+
+  rescore_btn: "请重新评分 →",
+  rescore_btn_disabled_hint: "至少聊一轮再重新评分",
+  rescore_loading: "正在重新评估...",
+  rescore_done: (delta) =>
+    delta > 0
+      ? `✓ 已重新评分（+${delta}）。下方 mentor 卡有新分对照`
+      : delta < 0
+        ? `✓ 已重新评分（${delta}）。下方 mentor 卡有新分对照`
+        : "✓ 已重新评分（持平）。下方 mentor 卡已更新",
+  rescore_failed: (msg) => `重新评分失败：${msg}`,
 
   group_speaker_label: (mentorName) => `${mentorName} 在说`,
   group_pass_msg: "（这一轮我没什么要补充的。）",
@@ -934,19 +935,21 @@ const en: Strings = {
   chat_empty_group: "Panel hasn't convened. Hit \"Send\" to let all mentors weigh in on this idea.",
   chat_role_you: "You",
 
-  clarify_btn: "Clarify →",
-  clarify_modal_title: (mentorName) => `${mentorName} has more questions`,
-  clarify_modal_intro:
-    "Answer these sharp questions and they'll re-score. The original evaluation stays for comparison.",
-  clarify_loading_questions: "Generating questions...",
-  clarify_submit: "Submit and re-score",
-  clarify_recomputing: "Re-evaluating...",
-  clarify_done: "Done. See the refined card below.",
   clarify_refined_label: "After dialogue",
   clarify_original_label: "Before dialogue",
   clarify_score_diff: (delta) =>
     delta > 0 ? `+${delta}` : delta < 0 ? `${delta}` : "no change",
-  clarify_answer_placeholder: "Be specific — names, times, numbers...",
+
+  rescore_btn: "Ask for fresh score →",
+  rescore_btn_disabled_hint: "Chat at least one turn before rescoring",
+  rescore_loading: "Re-evaluating...",
+  rescore_done: (delta) =>
+    delta > 0
+      ? `✓ Rescored (+${delta}). New score now under their card on the page`
+      : delta < 0
+        ? `✓ Rescored (${delta}). New score now under their card on the page`
+        : "✓ Rescored (no change). Card on the page is up to date",
+  rescore_failed: (msg) => `Rescore failed: ${msg}`,
 
   group_speaker_label: (mentorName) => `${mentorName} is speaking`,
   group_pass_msg: "(I have nothing to add this round.)",

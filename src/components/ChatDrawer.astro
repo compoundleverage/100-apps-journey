@@ -64,6 +64,25 @@ const settingsHref = localizedHref("/settings", lang);
         {s.chat_send}
       </button>
     </div>
+    <!-- Rescore + clear row. Rescore is disabled until there's been at least one mentor turn (1on1 only — group makes less sense). -->
+    <div
+      id="chat-rescore-row"
+      class="hidden flex items-center justify-between mt-2 gap-3"
+    >
+      <button
+        id="chat-rescore"
+        type="button"
+        title={s.rescore_btn_disabled_hint}
+        class="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft border border-rule px-3 py-1.5 hover:text-seal hover:border-seal transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:text-ink-soft disabled:hover:border-rule"
+        disabled
+      >
+        {s.rescore_btn}
+      </button>
+      <p
+        id="chat-rescore-status"
+        class="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-soft truncate text-right"
+      ></p>
+    </div>
     <div class="flex justify-between items-center mt-2 font-mono text-[9px] text-ink-soft uppercase tracking-[0.16em]">
       <span>{s.chat_cost_hint}</span>
       <button
@@ -112,11 +131,10 @@ const settingsHref = localizedHref("/settings", lang);
 
 <script>
   import { ensureChatDrawer } from "../lib/chat/drawer";
-  import { bindClarifyTriggers, hydrateRefinedCards } from "../lib/chat/clarify";
+  import { hydrateRefinedCards } from "../lib/chat/clarify";
   // Initialize on DOMContentLoaded — also handles bfcache restores.
   function init() {
     ensureChatDrawer();
-    bindClarifyTriggers();
     hydrateRefinedCards();
   }
   if (document.readyState === "loading") {

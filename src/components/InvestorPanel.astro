@@ -128,7 +128,7 @@ const lgColsClass =
                 {evaluation.reasoning}
               </p>
               {ideaId && (
-                <div class="mt-4 flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.18em]">
+                <div class="mt-4 font-mono text-[10px] uppercase tracking-[0.18em]">
                   <button
                     type="button"
                     data-chat-trigger
@@ -142,18 +142,6 @@ const lgColsClass =
                     style={`color: ${mentor.accent}`}
                   >
                     {s.chat_open_with(mentor.name)}
-                  </button>
-                  <span class="opacity-40">·</span>
-                  <button
-                    type="button"
-                    data-clarify-trigger
-                    data-chat-idea={ideaId}
-                    data-chat-mentor={mentor.slug}
-                    data-chat-mentor-name={mentor.name}
-                    data-chat-mentor-accent={mentor.accent}
-                    class="text-ink-soft hover:text-seal transition-colors"
-                  >
-                    {s.clarify_btn}
                   </button>
                 </div>
               )}
