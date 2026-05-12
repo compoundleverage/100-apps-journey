@@ -1,20 +1,15 @@
 /**
  * Server-only helpers shared across chat endpoints.
  *
- * Loads mentor SKILL.md frontmatter from disk and composes the chat-mode
- * system prompt. Reuses the heavy persona spec the evaluator already uses,
- * adds a chat-mode VOICE_OVERRIDE so the mentor reasons conversationally
- * instead of returning the strict JSON shape evaluate.ts expects.
+ * Reads mentors via Astro's content layer (`getCollection("mentors")`) so
+ * everything works in Vercel serverless mode where the project's `src/`
+ * tree is NOT on the function's filesystem at runtime — only what the
+ * Astro content layer bundles into the SSR function is reachable.
  */
 
-import matter from "gray-matter";
-import { readFile, readdir } from "node:fs/promises";
-import path from "node:path";
 import { getCollection } from "astro:content";
 import type { CollectionEntry } from "astro:content";
 import type { ChatMessage, ChatMode } from "./types";
-
-const MENTORS_DIR = "src/content/mentors";
 
 export interface MentorRecord {
   slug: string;
@@ -37,28 +32,21 @@ export async function loadMentor(slug: string): Promise<MentorRecord | null> {
 
 export async function loadAllMentors(): Promise<MentorRecord[]> {
   if (_cache) return _cache;
-  const dirs = (await readdir(MENTORS_DIR, { withFileTypes: true }))
-    .filter((d) => d.isDirectory())
-    .map((d) => d.name);
-
-  _cache = await Promise.all(
-    dirs.map(async (slug) => {
-      const raw = await readFile(path.join(MENTORS_DIR, slug, "SKILL.md"), "utf-8");
-      const { data } = matter(raw);
-      return {
-        slug,
-        name: data.name as string,
-        short_bio: data.short_bio as string,
-        avatar_initials: data.avatar_initials as string,
-        accent: data.accent as string,
-        system_prompt: data.system_prompt as string,
-        version: data.version as MentorRecord["version"],
-        sort_order: (data.sort_order as number) ?? 99,
-        research_dimensions: data.agentic_protocol?.research_dimensions,
-      };
-    }),
-  );
-  return _cache.sort((a, b) => a.sort_order - b.sort_order);
+  const entries = await getCollection("mentors");
+  _cache = entries
+    .map((entry) => ({
+      slug: entry.id,
+      name: entry.data.name,
+      short_bio: entry.data.short_bio,
+      avatar_initials: entry.data.avatar_initials,
+      accent: entry.data.accent,
+      system_prompt: entry.data.system_prompt,
+      version: entry.data.version,
+      sort_order: entry.data.sort_order,
+      research_dimensions: entry.data.agentic_protocol?.research_dimensions,
+    }))
+    .sort((a, b) => a.sort_order - b.sort_order);
+  return _cache;
 }
 
 export async function loadIdea(ideaId: string): Promise<CollectionEntry<"ideas"> | null> {

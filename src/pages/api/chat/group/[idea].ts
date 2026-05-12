@@ -31,6 +31,19 @@ const MAX_TOKENS_TURN = 500;
  *      Stream that mentor's turn.
  */
 export const POST: APIRoute = async ({ params, request }) => {
+  try {
+    return await handle(params, request);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? `${e.message}\n${e.stack ?? ""}` : String(e);
+    console.error("[chat/group] uncaught:", msg);
+    return new Response(`server error: ${msg}`.slice(0, 1000), { status: 500 });
+  }
+};
+
+async function handle(
+  params: Record<string, string | undefined>,
+  request: Request,
+): Promise<Response> {
   const ideaId = params.idea;
   if (!ideaId) return new Response("Missing idea", { status: 400 });
 

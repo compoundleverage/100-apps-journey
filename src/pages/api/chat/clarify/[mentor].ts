@@ -34,6 +34,19 @@ interface RescoreRequest {
 type ClarifyRequest = QuestionsRequest | RescoreRequest;
 
 export const POST: APIRoute = async ({ params, request }) => {
+  try {
+    return await handle(params, request);
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? `${e.message}\n${e.stack ?? ""}` : String(e);
+    console.error("[chat/clarify] uncaught:", msg);
+    return new Response(`server error: ${msg}`.slice(0, 1000), { status: 500 });
+  }
+};
+
+async function handle(
+  params: Record<string, string | undefined>,
+  request: Request,
+): Promise<Response> {
   const mentorSlug = params.mentor;
   if (!mentorSlug) return new Response("Missing mentor", { status: 400 });
 

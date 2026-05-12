@@ -18,6 +18,22 @@ const MAX_TOKENS = 600; // tight to stay within Vercel Hobby 10s streaming budge
 const MODEL = "claude-sonnet-4-6";
 
 export const POST: APIRoute = async ({ params, request }) => {
+  try {
+    return await handle(params, request);
+  } catch (e: unknown) {
+    // Top-level safety net: any uncaught throw (filesystem, parse, network)
+    // returns a useful body so client.streamChat surfaces it via the error
+    // event — instead of a Vercel-wrapped opaque "Internal Server Error".
+    const msg = e instanceof Error ? `${e.message}\n${e.stack ?? ""}` : String(e);
+    console.error("[chat/1on1] uncaught:", msg);
+    return new Response(`server error: ${msg}`.slice(0, 1000), { status: 500 });
+  }
+};
+
+async function handle(
+  params: Record<string, string | undefined>,
+  request: Request,
+): Promise<Response> {
   const mentorSlug = params.mentor;
   if (!mentorSlug) return new Response("Missing mentor slug", { status: 400 });
 
@@ -115,4 +131,4 @@ export const POST: APIRoute = async ({ params, request }) => {
       "X-Accel-Buffering": "no",
     },
   });
-};
+}
