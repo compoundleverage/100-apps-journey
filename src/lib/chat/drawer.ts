@@ -235,6 +235,17 @@ export class ChatDrawerController {
 
   private currentSessionId(): string | null {
     if (!this.current) return null;
+    // Group mode: sign the session by the SORTED seated slug list. When the
+    // visitor swaps mentors in/out, the signature changes → fresh thread.
+    // The old thread still lives in localStorage under the previous signature
+    // and would surface again if the visitor restores that exact roster.
+    if (this.current.mode === "group") {
+      const slugs = (this.current.groupMentors ?? [])
+        .map((m) => m.slug)
+        .sort()
+        .join(",");
+      return sessionId(this.current.mode, this.current.ideaId, slugs || "group");
+    }
     return sessionId(this.current.mode, this.current.ideaId, this.current.mentor);
   }
 

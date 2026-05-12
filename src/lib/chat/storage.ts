@@ -82,13 +82,18 @@ export function saveSession(session: ChatSession): void {
 export function appendMessage(id: string, msg: ChatMessage): ChatSession | null {
   const existing = loadSession(id);
   const now = new Date().toISOString();
+  const parts = id.split(":");
+  const mode = parts[1] as ChatMode;
   const session: ChatSession =
     existing ??
     {
       id,
-      mode: id.split(":")[1] as ChatMode,
-      ideaId: id.split(":")[2] ?? "",
-      mentor: id.split(":")[3] === "group" ? undefined : id.split(":")[3],
+      mode,
+      ideaId: parts[2] ?? "",
+      // 1on1 stores the mentor slug at parts[3]; group encodes the sorted
+      // seated-slug signature there (or the legacy literal "group"), neither
+      // of which represents a single mentor — so for group keep this undefined.
+      mentor: mode === "group" ? undefined : parts[3],
       messages: [],
       createdAt: now,
       updatedAt: now,

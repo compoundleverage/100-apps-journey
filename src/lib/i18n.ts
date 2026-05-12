@@ -317,6 +317,7 @@ type Strings = {
   chat_cost_hint: string;
   chat_clear_history: string;
   chat_clear_confirm: string;
+  chat_start_over: string;
   chat_empty_1on1: (mentorName: string) => string;
   chat_empty_group: string;
   chat_role_you: string;
@@ -638,6 +639,7 @@ const zh: Strings = {
   chat_cost_hint: "≈ $0.02-0.05/轮，从你自己的 Anthropic 账户出",
   chat_clear_history: "清空本对话",
   chat_clear_confirm: "确定清空？历史不可恢复。",
+  chat_start_over: "重新开始",
   chat_empty_1on1: (mentorName) =>
     `对话还没开始。${mentorName} 会先问你一个问题——按 "发送" 让他开口。`,
   chat_empty_group: "圆桌还没开。按 \"发送\" 让所有顾问对这个 idea 各说一句。",
@@ -971,6 +973,7 @@ const en: Strings = {
   chat_cost_hint: "≈ $0.02-0.05/turn, billed to your own Anthropic account",
   chat_clear_history: "Clear this conversation",
   chat_clear_confirm: "Clear chat history? This can't be undone.",
+  chat_start_over: "Start over",
   chat_empty_1on1: (mentorName) =>
     `Conversation hasn't started. ${mentorName} will open with one sharp question — hit "Send" to let them speak.`,
   chat_empty_group: "Panel hasn't convened. Hit \"Send\" to let all mentors weigh in on this idea.",

@@ -29,6 +29,14 @@ const settingsHref = localizedHref("/settings", lang);
       ></p>
     </div>
     <button
+      id="chat-clear"
+      type="button"
+      title={s.chat_clear_history}
+      class="font-mono text-[10px] uppercase tracking-[0.18em] text-ink-soft border border-rule px-2.5 py-1 hover:text-seal hover:border-seal transition-colors"
+    >
+      ↻ {s.chat_start_over}
+    </button>
+    <button
       id="chat-close"
       type="button"
       aria-label={s.chat_close}
@@ -83,16 +91,9 @@ const settingsHref = localizedHref("/settings", lang);
         class="font-mono text-[9px] uppercase tracking-[0.16em] text-ink-soft truncate text-right"
       ></p>
     </div>
-    <div class="flex justify-between items-center mt-2 font-mono text-[9px] text-ink-soft uppercase tracking-[0.16em]">
-      <span>{s.chat_cost_hint}</span>
-      <button
-        id="chat-clear"
-        type="button"
-        class="hover:text-seal transition-colors"
-      >
-        {s.chat_clear_history}
-      </button>
-    </div>
+    <p class="mt-2 font-mono text-[9px] text-ink-soft uppercase tracking-[0.16em]">
+      {s.chat_cost_hint}
+    </p>
   </footer>
 </aside>
 
